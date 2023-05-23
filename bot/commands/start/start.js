@@ -6,20 +6,21 @@ const { userCheck } = require('../../../backend/firestore/utility/user_check');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('start')
-		.setDescription('Enter the wasteland...'),
+		.setDescription('Enter Discordia'),
 	async execute(interaction) {
 		const user = interaction.user;
 
 		if(await userCheck(user)) {
-			return interaction.reply('You cannot "/start" again, try /explore.')
+			return interaction.reply('You cannot "/start" again, try /test.')
 		}
 
 		await start(user);
 
         const startEmbed = new EmbedBuilder()
-            .setTitle("Cord Exodus")
-            .setDescription("You're in the wasteland, try /explore")
-            .setImage("https://i.imgur.com/OgIlXd9.png")
+            .setTitle("Welcome to Discordia!")
+            .setDescription("Try /TEST")
+            .setImage("https://i.imgur.com/KX845iF.jpg")
+
 		return interaction.reply({ embeds: [startEmbed] });
 	},
 };

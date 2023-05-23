@@ -5,7 +5,7 @@ const adminCheck = async (user) => {
     const userRef = doc(db, 'users', user.id);
     const userSnap = await getDoc(userRef);
 
-    if(userSnap.data()?.rank === 'admin') {
+    if(userSnap.data()?.admin === true) {
         return true;
     }
 

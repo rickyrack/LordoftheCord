@@ -9,19 +9,20 @@ const start = async (user) => {
         created: date.toLocaleDateString(),
         id: user.id,
         username: user.username,
-        rank: 'player',
+        admin: false,
+        location: [3, 7],
         stats: {
             health: 100,
-            stamina: 100,
+            morale: 80,
             hunger: 80,
             thirst: 80
         },
-        backpack: {
-            Water_Bottle: {
+        gear: {
+            Canteen_Full: {
                     weight: 'temp',
                     thirst: 40,
-                    name: 'Water Bottle',
-                    id: 'Water_Bottle',
+                    name: 'Canteen',
+                    id: 'Canteen_Full',
                     amt: 1
             }
 
