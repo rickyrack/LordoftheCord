@@ -10,7 +10,7 @@ const start = async (user) => {
         id: user.id,
         username: user.username,
         admin: false,
-        location: [3, 7],
+        coords: [50, 50],
         stats: {
             health: 100,
             morale: 80,
