@@ -1,18 +1,18 @@
 {
     "Forest": {
-        "emojis": ["🌲"],
+        "emojis": ["🌲", "🌳"],
         "iconURL": "https://i.imgur.com/RZcR4FI.png"
     },
     "Desert": {
-        "emojis": ["🌵"],
+        "emojis": ["🌵", "<:Desert:1111895771806183464>"],
         "iconURL": "https://i.imgur.com/6b7DFdR.png"
     },
     "Plains": {
-        "emojis": ["<:Grass:1103103671413248052>"],
+        "emojis": ["<:Plains:1103103671413248052>", "<:Plains:1111899111579467816>"],
         "iconURL": "https://i.imgur.com/0HY7jTD.png"
     },
     "Dark Forest": {
-        "emojis": ["<:DarkForest:1110031221494390795>"],
+        "emojis": ["<:DarkForest:1110031221494390795>", "<:DarkForest:1111897512291336223>"],
         "iconURL": "https://i.imgur.com/UqVFz5D.png"
     },
     "Tundra": {
@@ -20,7 +20,7 @@
         "iconURL": "https://i.imgur.com/N8IyTcV.png"
     },
     "Highlands": {
-        "emojis": ["🏔️"],
+        "emojis": ["<:Highlands:1111899124376277053>"],
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
     },
     "Mountains": {

@@ -28,14 +28,14 @@ const move = async (user, dir) => {
       break;
     case 'southwest':
       dirValue.x = -1;
-      dirValue.y = -1;
+      dirValue.y = 1;
       break;
     case 'west':
       dirValue.x = -1;
       break;
     case 'northwest':
       dirValue.x = -1;
-      dirValue.x = -1;
+      dirValue.y = -1;
       break;
   }
 

@@ -67,7 +67,8 @@ module.exports = {
             footer.location = tile.type;
             footer.iconURL = tileSet[tile.type].iconURL;
           } else {
-            displayMap += tileSet[tile.type].emojis;
+            displayMap += // selects random tile from tileSet array
+              tileSet[tile.type].emojis[Math.floor(Math.random() * tileSet[tile.type].emojis.length)];
           }
         }
         displayMap += "\n";
