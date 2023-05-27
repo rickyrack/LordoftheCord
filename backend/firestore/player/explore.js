@@ -12,12 +12,12 @@ const explore = async (userData, user) => {
     const availItems = [];
 
     Object.keys(tileSnap.data().items).forEach(item => {
-        for (let i = 0; i < tileSnap.data().items[item]; i++) {
+        for (let i = 0; i < tileSnap.data().items[item].chance; i++) {
             availItems.push(item);
         }
     });
 
-    let partySize = 1;
+    let partySize = 1; // accounts for self
     Object.values(userData.party).forEach(unitAmt => {
         partySize += unitAmt;
     })
@@ -27,14 +27,14 @@ const explore = async (userData, user) => {
     let items = [];
 
     for (let i = 0; i < multiplier; i++) {
-        console.log('test');
         items.push(availItems[Math.floor(Math.random() * availItems.length)]);
     }
 
-    await addItem(user, 'Mushroom');
-    console.log('BREAK');
-    console.log(availItems);
-    console.log(items);
+    for (let i = 0; i < items.length; i++) {
+        await addItem(user, items[i]);
+    }
+
+    return items;
 }
 
 module.exports = { explore };

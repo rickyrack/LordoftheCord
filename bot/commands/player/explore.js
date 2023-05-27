@@ -20,15 +20,21 @@ module.exports = {
 
         const tile = getTile(userData);
 
-        const itemsFound = explore(userData, user);
+        const itemsFound = await explore(userData, user);
+
+		let itemsString = '';
+
+		itemsFound.forEach(item => {
+			itemsString += `(1) ${item}\n`
+		})
 
         const exploreEmbed = new EmbedBuilder()
             .setTitle(`You explore the ${tile.type}`)
             .setImage('https://i.imgur.com/G6AEA2T.png');
 
-        exploreEmbed.addFields({
-            name: 'ok', value: 'okok'
-        })
+			exploreEmbed.addFields({
+				name: 'Your exploring payed off, you found:', value: `${itemsString}`
+			})
 
 		return interaction.reply({ embeds: [exploreEmbed] });
 	},
