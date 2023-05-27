@@ -20,7 +20,7 @@ module.exports = {
 
         const tile = getTile(userData);
 
-        const itemsFound = explore(userData);
+        const itemsFound = explore(userData, user);
 
         const exploreEmbed = new EmbedBuilder()
             .setTitle(`You explore the ${tile.type}`)
