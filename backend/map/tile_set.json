@@ -4,7 +4,7 @@
         "iconURL": "https://i.imgur.com/RZcR4FI.png"
     },
     "Desert": {
-        "emojis": ["🌵", "<:Desert:1111895771806183464>"],
+        "emojis": ["🌵", "<:Desert:1111895771806183464>", "<:Desert:1111924425974099978>"],
         "iconURL": "https://i.imgur.com/6b7DFdR.png"
     },
     "Plains": {
@@ -16,7 +16,7 @@
         "iconURL": "https://i.imgur.com/UqVFz5D.png"
     },
     "Tundra": {
-        "emojis": ["<:Tundra:1110032393198383154>"],
+        "emojis": ["<:Tundra:1110032393198383154>", "<:Tundra:1111922421906280561>"],
         "iconURL": "https://i.imgur.com/N8IyTcV.png"
     },
     "Highlands": {
@@ -28,19 +28,23 @@
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
     },
     "Swamp": {
-        "emojis": ["🐊"],
+        "emojis": ["<:Swamp:1111902546706047036>", "<:Swamp:1111922443515334656>"],
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
     },
     "Pine Barrens": {
-        "emojis": ["🌳"],
+        "emojis": ["<:PineBarrens:1111927014484611083> ", "<:PineBarrens:1111923440430092318>"],
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
     },
     "Water": {
-        "emojis": [":ocean:"],
+        "emojis": ["<:Ocean:1111926165926588457>"],
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
     },
     "Player": {
         "emojis": ["<:You_are_here:1102783478677905528>"],
         "iconURL": "https://i.imgur.com/bAJWYMx.png"
+    },
+    "Village": {
+        "emojis": ["<:Village:1112036922257313802>"],
+        "iconURL": "should copy from underlying tile type"
     }
 }

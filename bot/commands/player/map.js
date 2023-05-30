@@ -8,6 +8,9 @@ const {
 const { userCheck } = require("../../../backend/firestore/utility/user_check");
 const { getUser } = require("../../../backend/firestore/utility/get_user");
 const { move } = require("../../../backend/firestore/player/move");
+const {
+  getLocations,
+} = require("../../../backend/firestore/utility/get_locations");
 
 module.exports = {
   data: new SlashCommandBuilder().setName("map").setDescription("map TEST"),
@@ -56,6 +59,8 @@ module.exports = {
         iconURL: "",
       };
 
+      const locations = await getLocations();
+
       for (let h = 0; h < 9; h++) {
         for (let w = 0; w < 9; w++) {
           const tile = travelMap[w][h];
@@ -67,8 +72,23 @@ module.exports = {
             footer.location = tile.type;
             footer.iconURL = tileSet[tile.type].iconURL;
           } else {
-            displayMap += // selects random tile from tileSet array
-              tileSet[tile.type].emojis[Math.floor(Math.random() * tileSet[tile.type].emojis.length)];
+            const noLocation = true;
+            console.log(locations);
+            locations.forEach((location) => {
+              console.log(location);
+              if (
+                tile.coords[0] === [location].coords.x &&
+                tile.coords[1] === [location].coords.y
+              ) {
+                noLocation = false;
+                displayMap += tileSet[[location].type].emojis;
+              }
+            });
+            if (noLocation) {
+              // assigns tile specific emoji based on emojiNum
+              const emojiNum = tile.emojiNum % tileSet[tile.type].emojis.length;
+              displayMap += tileSet[tile.type].emojis[emojiNum];
+            }
           }
         }
         displayMap += "\n";
@@ -190,12 +210,12 @@ module.exports = {
 
       moveCollector.on("end", async (collected, reason) => {
         // add timeout and close too?
-        if(reason === 'time') {
-            mapOpen = false;
-            await interaction.editReply({
-                embeds: [timeoutEmbed],
-                components: []
-            })
+        if (reason === "time") {
+          mapOpen = false;
+          await interaction.editReply({
+            embeds: [timeoutEmbed],
+            components: [],
+          });
         }
       });
     }
