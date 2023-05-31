@@ -72,16 +72,14 @@ module.exports = {
             footer.location = tile.type;
             footer.iconURL = tileSet[tile.type].iconURL;
           } else {
-            const noLocation = true;
-            console.log(locations);
+            let noLocation = true;
             locations.forEach((location) => {
-              console.log(location);
               if (
-                tile.coords[0] === [location].coords.x &&
-                tile.coords[1] === [location].coords.y
+                tile.coords[0] === location.coords.x &&
+                tile.coords[1] === location.coords.y
               ) {
                 noLocation = false;
-                displayMap += tileSet[[location].type].emojis;
+                displayMap += tileSet[location.type].emojis;
               }
             });
             if (noLocation) {
@@ -194,7 +192,7 @@ module.exports = {
             embeds: [closeEmbed],
             components: [],
           });
-          return;
+          // return;
         }
         await i.update({
           embeds: [mapEmbed, loadingEmbed],
@@ -209,8 +207,7 @@ module.exports = {
       });
 
       moveCollector.on("end", async (collected, reason) => {
-        // add timeout and close too?
-        if (reason === "time") {
+        if (reason === "time" && mapOpen === true) {
           mapOpen = false;
           await interaction.editReply({
             embeds: [timeoutEmbed],

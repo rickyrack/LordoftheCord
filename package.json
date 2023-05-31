@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node bot/deploy-commands.js && node bot/index.js"
+    "start": "node bot/index.js",
+    "deploy": "node bot/deploy-commands.js && node bot/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^14.10.1",
+    "discord.js": "^14.11.0",
     "firebase": "^9.21.0"
   }
 }

@@ -1,76 +1,69 @@
-const { EmbedBuilder } = require('@discordjs/builders');
-const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
-const { userCheck } = require('../../../backend/firestore/utility/user_check');
-const { getUser } = require('../../../backend/firestore/utility/get_user');
+const { EmbedBuilder } = require("@discordjs/builders");
+const {
+  SlashCommandBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+} = require("discord.js");
+const { userCheck } = require("../../../backend/firestore/utility/user_check");
+const { getUser } = require("../../../backend/firestore/utility/get_user");
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('gear')
-		.setDescription('Look at your gear.'),
-	async execute(interaction) {
-		const user = interaction.user;
+  data: new SlashCommandBuilder()
+    .setName("gear")
+    .setDescription("Look at your gear."),
+  async execute(interaction) {
+    const user = interaction.user;
 
-		if(!await userCheck(user)) {
-			return interaction.reply('Try /start to enter Discordia!')
-		}
+    if (!(await userCheck(user))) {
+      return interaction.reply("Try /start to enter Discordia!");
+    }
 
-        const userData = await getUser(user);
+    const userData = await getUser(user);
 
-		console.log(userData.gear);
+    console.log(userData.gear);
 
-		let gearString = '';
+    const gearSelect = new StringSelectMenuBuilder()
+      .setCustomId("item")
+      .setPlaceholder("No Item Selected");
 
-		let itemCounter = 0;
-		Object.keys(userData.gear).forEach(item => {
-			itemCounter++;
-			gearString += `(${itemCounter}) [${userData.gear[item].quantity}] ${userData.gear[item].name}\n`
-		});
+    let gearString = "";
 
-				// gear selection buttons
-				const row1 = new ActionRowBuilder();
-				const row2 = new ActionRowBuilder();
-				const row3 = new ActionRowBuilder();
-		
-				let rowCounter = 1;
-				let currentRow = row1;
-		
-				for (let i = 1; i < itemCounter + 1; i++) {
-					switch (rowCounter) {
-						case 6:
-							currentRow = row2;
-							break;
-						case 11:
-							currentRow = row3;
-								break;
-						default:
-							break;
-					}
-					currentRow.addComponents(
-						new ButtonBuilder()
-							.setCustomId(`${i}`)
-							.setLabel(`Item (${i})`)
-							.setStyle(ButtonStyle.Secondary)
-						)
-					rowCounter++;
-				}
+    Object.keys(userData.gear).forEach((itemID) => {
+      gearString += `[${
+        userData.gear[itemID].quantity > 9
+          ? userData.gear[itemID].quantity
+          : "0" + userData.gear[itemID].quantity
+      }] ${userData.gear[itemID].name} ${userData.gear[itemID]?.emoji ? userData.gear[itemID]?.emoji : ' '}\n`;
+      gearSelect.addOptions(
+        new StringSelectMenuOptionBuilder()
+          .setLabel(
+            `[${
+              userData.gear[itemID].quantity > 9
+                ? userData.gear[itemID].quantity
+                : "0" + userData.gear[itemID].quantity
+            }] ${userData.gear[itemID].name} ${userData.gear[itemID]?.emoji ? userData.gear[itemID]?.emoji : ' '}`
+          )
+          .setDescription("This is based on type of item, ex: food gets morale, weapons get damage etc")
+          .setValue(`${userData.gear[itemID].id}`)
+      );
+    });
 
-		const gearEmbed = new EmbedBuilder()
-			.setTitle('⚔️ 🏹 Gear 🍗 🛡️')
-			.addFields({
-				name: `${gearString}`, value: ' '
-				});
+    // gear selection selection menu
+    const row1 = new ActionRowBuilder().addComponents(gearSelect);
 
-		// sets how many button rows to show
-		const showButtons = itemCounter > 10
-		? [row1, row2, row3]
-		: itemCounter > 5
-			? [row1, row2]
-			: [row1];
+    const gearEmbed = new EmbedBuilder()
+      .setTitle("⚔️ 🏹 Gear 🍗 🛡️")
+      .addFields({
+        name: `${gearString}`,
+        value: " ",
+      });
 
-		console.log(row1);
-		return interaction.reply({
-			embeds: [gearEmbed],
-			components: showButtons
-		});
-	},
+    return interaction.reply({
+      embeds: [gearEmbed],
+      components: [row1],
+    });
+  },
 };

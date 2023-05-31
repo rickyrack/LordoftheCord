@@ -9,7 +9,7 @@ const getLocations = async () => {
 
     locationRef.forEach(doc => {
         // needs to cycle through each docs data
-        if(doc.data() !== {}) locations.push(doc.data());
+        if(Object.keys(doc.data()).length > 0) locations.push(doc.data());
 
     });
 

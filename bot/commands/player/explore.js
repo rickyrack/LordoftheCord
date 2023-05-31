@@ -25,7 +25,7 @@ module.exports = {
 		let itemsString = '';
 
 		itemsFound.forEach(item => {
-			itemsString += `(1) ${item}\n`
+			itemsString += `[1] ${item}\n`
 		})
 
         const exploreEmbed = new EmbedBuilder()

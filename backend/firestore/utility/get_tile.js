@@ -1,3 +1,5 @@
+// for specific tile data, used in explore
+
 const getTile = (userData) => {
     const mapData = require('../../map/map.json').map;
 
