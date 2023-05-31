@@ -1,5 +1,5 @@
 const { doc, getDoc } = require("firebase/firestore");
-const { getTile } = require("../utility/get_tile");
+const { getTile } = require("../../../bot/helper/locations/get_tile");
 const { db } = require("../../firebase-config");
 const { addItem } = require("../utility/add_item");
 

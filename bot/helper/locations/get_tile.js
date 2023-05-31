@@ -1,7 +1,7 @@
 // for specific tile data, used in explore
 
 const getTile = (userData) => {
-    const mapData = require('../../map/map.json').map;
+    const mapData = require('../../../backend/map/map.json').map;
 
     let tile;
     mapData.forEach(column => {

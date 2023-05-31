@@ -21,7 +21,7 @@ const start = async (user) => {
             player: {},
             party: {
                 exploration: 1,
-                speed: 1,
+                pathfinding: 1,
                 leadership: 1,
                 spotting: 1,
                 training: 1,
@@ -29,7 +29,18 @@ const start = async (user) => {
             }
         },
         gear: {},
-        party: {}
+        party: {},
+        consumeFirst: '',
+        equipped: {
+            hand: ['test1', 'test2', 'test3', 'test4'],
+            armor: {
+                head: 'test head',
+                body: 'test body',
+                legs: 'test legs'
+            },
+            amulet: 'test amulet',
+            horse: 'test horse UNSURE about horse'
+        }
     });
 
 

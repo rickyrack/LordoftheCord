@@ -18,14 +18,21 @@ const addItem = async (user, itemID, userData) => {
         data: {}
     }
 
+    let itemExists = false;
+
     itemsSnap.forEach(doc => {
         Object.keys(doc.data()).forEach(item => {
             if(item === itemID) {
+                itemExists = true;
                 itemData.id = item;
-                itemData.data = doc.data()[item];
+                const data = doc.data()[item];
+                data.type = doc.id;
+                itemData.data = data;
             }
         })
     })
+
+    if(!itemExists) return false;
 
     if(userData.gear?.[itemData.id]?.quantity > 0) {
         await updateDoc(userRef, {
@@ -33,11 +40,14 @@ const addItem = async (user, itemID, userData) => {
         })
     }
     else {
+        console.log(itemData.data)
         await updateDoc(userRef, {
             [`gear.${itemData.id}`]: itemData.data,
             [`gear.${itemData.id}.quantity`]: increment(1)
         })
     }
+
+    return true;
 }
 
 module.exports = { addItem };

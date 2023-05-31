@@ -1,9 +1,9 @@
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
 const { userCheck } = require('../../../backend/firestore/utility/user_check');
-const { getTile } = require('../../../backend/firestore/utility/get_tile');
 const { explore } = require('../../../backend/firestore/player/explore');
 const { getUser } = require('../../../backend/firestore/utility/get_user');
+const { getTile } = require('../../helper/locations/get_tile');
 
 module.exports = {
 	data: new SlashCommandBuilder()
