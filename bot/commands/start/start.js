@@ -19,7 +19,7 @@ module.exports = {
         const startEmbed = new EmbedBuilder()
             .setTitle("Welcome to Discordia!")
             .setDescription("Try /TEST")
-            .setImage("https://i.imgur.com/KX845iF.jpg")
+            .setImage("https://i.imgur.com/KX845iF.jpg");
 
 		return interaction.reply({ embeds: [startEmbed] });
 	},

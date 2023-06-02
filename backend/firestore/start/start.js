@@ -39,7 +39,7 @@ const start = async (user) => {
                 legs: 'test legs'
             },
             amulet: 'test amulet',
-            horse: 'test horse UNSURE about horse'
+            horse: 'future feature'
         }
     });
 

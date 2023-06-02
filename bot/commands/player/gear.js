@@ -26,164 +26,209 @@ module.exports = {
 
     await gearFunction();
     async function gearFunction(gearDesc) {
+      const userData = await getUser(user);
 
-    const userData = await getUser(user);
+      console.log(userData.gear);
 
-    console.log(userData.gear);
-
-    Object.keys(userData.gear).forEach(itemID => {
-      if(userData.gear[itemID].quantity === 0) delete userData.gear[itemID];
-    })
-    const noGear = Object.keys(userData.gear).length === 0
-      ? true
-      : false;
-
-    if(noGear) {
-      const noGearEmbed = new EmbedBuilder()
-      .setTitle("⚔️ 🏹 Gear 🍗 🛡️")
-      .setDescription('Try /explore to find some gear.')
-      .addFields({
-        name: 'You have no gear!',
-        value: " ",
+      Object.keys(userData.gear).forEach((itemID) => {
+        if (userData.gear[itemID].quantity === 0) delete userData.gear[itemID];
       });
-      return interaction.reply({
-        embeds: [noGearEmbed]
+      const noGear = Object.keys(userData.gear).length === 0 ? true : false;
+
+      if (noGear) {
+        const noGearEmbed = new EmbedBuilder()
+          .setTitle("⚔️ 🏹 Gear 🍗 🛡️")
+          .setDescription("Try /explore to find some gear.")
+          .addFields({
+            name: "You have no gear!",
+            value: " ",
+          });
+        return interaction.reply({
+          embeds: [noGearEmbed],
+        });
+      }
+
+      const maxGearValues = Object.keys(userData.gear).length;
+      const gearSelect = new StringSelectMenuBuilder()
+        .setCustomId("item")
+        .setPlaceholder("No Item Selected")
+        .setMinValues(1)
+        .setMaxValues(maxGearValues);
+
+      // creates gear string containing ALL of the user's gear
+      let gearString = "";
+      Object.keys(userData.gear).forEach((itemID) => {
+        gearString += `[${
+          userData.gear[itemID].quantity > 9
+            ? userData.gear[itemID].quantity
+            : "0" + userData.gear[itemID].quantity
+        }] ${userData.gear[itemID].name} ${
+          userData.gear[itemID]?.emoji ? userData.gear[itemID]?.emoji : " "
+        }\n`;
+        gearSelect.addOptions(
+          new StringSelectMenuOptionBuilder()
+            .setLabel(
+              `[${
+                userData.gear[itemID].quantity > 9
+                  ? userData.gear[itemID].quantity
+                  : "0" + userData.gear[itemID].quantity
+              }] ${userData.gear[itemID].name} ${
+                userData.gear[itemID]?.emoji
+                  ? userData.gear[itemID]?.emoji
+                  : " "
+              }`
+            )
+            .setDescription(
+              "This is based on type of item, ex: food gets morale, weapons get damage etc"
+            )
+            .setValue(`${userData.gear[itemID].id}`)
+        );
       });
-    }
 
-    const maxGearValues = Object.keys(userData.gear).length;
-    const gearSelect = new StringSelectMenuBuilder()
-      .setCustomId("item")
-      .setPlaceholder("No Item Selected")
-      .setMinValues(1)
-      .setMaxValues(maxGearValues);
+      // creates "equipped" string for gear embed
+      let equippedString = "";
+      let equippedOrder = {
+        armor: "",
+        equipped: "",
+        amulet: "",
+      };
 
-    let gearString = "";
+      // DO NOT CHANGE SPACING OF LINES(affects embed spacing)
+      Object.keys(userData.equipped).forEach((type) => {
+        console.log(type);
+        if (type === "armor") {
+          equippedOrder.armor = `\nHead: ${
+            userData.gear[userData.equipped.armor.head]?.name || "No Head Gear"
+          }\nBody: ${
+            userData.gear[userData.equipped.armor.body]?.name || "No Body Armor"
+          }\nLegs: ${
+            userData.gear[userData.equipped.armor.legs]?.name || "No Leg Armor"
+          }\n`;
+        } else if (type === "hand") {
+          equippedOrder.equipped = `\nEquipped:\n${
+            userData.gear[userData.equipped?.hand[0]]?.name || "None"
+          } ${userData.gear[userData.equipped?.hand[0]]?.emoji}\n${userData.gear[userData.equipped?.hand[1]]?.name || "None"} ${userData.gear[userData.equipped?.hand[1]]?.emoji}\n${
+            userData.gear[userData.equipped?.hand[2]]?.name || "None"
+          } ${userData.gear[userData.equipped?.hand[2]]?.emoji}\n${userData.gear[userData.equipped?.hand[3]]?.name || "None"} ${userData.gear[userData.equipped?.hand[3]]?.emoji}\n`;
+        } else if (type === "amulet") {
+          equippedOrder.amulet = `\nAmulet:\n${
+            userData.gear[userData.equipped?.amulet]?.name ||
+            "No Amulet Equipped"
+          }`;
+        }
+      });
+      equippedString = `Armor:${equippedOrder.armor}${equippedOrder.equipped}${equippedOrder.amulet}`;
 
-    Object.keys(userData.gear).forEach((itemID) => {
-      gearString += `[${
-        userData.gear[itemID].quantity > 9
-          ? userData.gear[itemID].quantity
-          : "0" + userData.gear[itemID].quantity
-      }] ${userData.gear[itemID].name} ${userData.gear[itemID]?.emoji ? userData.gear[itemID]?.emoji : ' '}\n`;
       gearSelect.addOptions(
         new StringSelectMenuOptionBuilder()
-          .setLabel(
-            `[${
-              userData.gear[itemID].quantity > 9
-                ? userData.gear[itemID].quantity
-                : "0" + userData.gear[itemID].quantity
-            }] ${userData.gear[itemID].name} ${userData.gear[itemID]?.emoji ? userData.gear[itemID]?.emoji : ' '}`
-          )
-          .setDescription("This is based on type of item, ex: food gets morale, weapons get damage etc")
-          .setValue(`${userData.gear[itemID].id}`)
+          .setLabel("Close Gear")
+          .setValue("close")
       );
-    });
 
-    gearSelect.addOptions(
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Close Gear')
-        .setValue('close')
-    );
+      // gear selection selection menu
+      const row1 = new ActionRowBuilder().addComponents(gearSelect);
 
-    // gear selection selection menu
-    const row1 = new ActionRowBuilder().addComponents(gearSelect);
+      const gearEmbed = new EmbedBuilder()
+        .setTitle("⚔️ 🏹 Gear 🍗 🛡️")
+        .addFields(
+          { name: `${gearString}`, value: " ", inline: true },
+          { name: `${equippedString}`, value: " ", inline: true }
+        );
 
-    const gearEmbed = new EmbedBuilder()
-      .setTitle("⚔️ 🏹 Gear 🍗 🛡️")
-      .addFields({
-        name: `${gearString}`,
-        value: " ",
-      });
+      let message;
 
-    let message;
-
-    if(firstOpen) {
-      firstOpen = false;
-      message = await interaction.reply({
-        content: '',
-        embeds: [gearEmbed],
-        components: [row1],
-      });
-    }
-    else {
-      gearEmbed.setDescription(gearDesc);
-      message = await interaction.editReply({
-        content: '',
-        embeds: [gearEmbed],
-        components: [row1],
-      });
-    }
-
-    const gearFilter = i => {
-      return i.user.id === user.id
-    }
-
-    const gearCollector = message.createMessageComponentCollector({
-      filter: gearFilter,
-      time: 60000
-    });
-
-    
-    const timeoutEmbed = new EmbedBuilder().setTitle("Your gear got bored.");
-    const closeEmbed = new EmbedBuilder().setTitle("You stopped looking at your gear.");
-
-    let gearChoices = '';
-    let itemUsed = false;
-    let timeout = true;
-    gearCollector.on('collect', async (selectInt) => {
-      timeout = false;
-      gearChoices = selectInt.values;
-
-      if(gearChoices[0] === 'close') {
-        return interaction.editReply({
-          content: '',
-          embeds: [closeEmbed],
-          components: []
-        })
+      if (firstOpen) {
+        firstOpen = false;
+        message = await interaction.reply({
+          content: "",
+          embeds: [gearEmbed],
+          components: [row1],
+        });
+      } else {
+        gearEmbed.setDescription(gearDesc);
+        message = await interaction.editReply({
+          content: "",
+          embeds: [gearEmbed],
+          components: [row1],
+        });
       }
 
-      console.log(gearChoices);
-      console.log(userData.gear[gearChoices[0]]);
+      const gearFilter = (i) => {
+        return i.user.id === user.id;
+      };
 
-      let desc = '';
+      const gearCollector = message.createMessageComponentCollector({
+        filter: gearFilter,
+        time: 60000,
+      });
 
-      if(gearChoices.length === 1) {
-        switch (userData.gear[gearChoices[0]].type) {
-          case 'food':
-            console.log('food')
-            itemUsed = await useItem(user, userData, userData.gear[gearChoices[0]].id);
-            desc = `Your party will consume ${userData.gear[gearChoices[0]].name}s first.`;
-            break;
-          case 'weapons':
-            console.log('weapons')
-            break;
-          case 'misc':
-            console.log('misc')
-            break;
-          default:
-            console.log('ERROR: Item type does not exist.')
-            break;
-        }
+      const timeoutEmbed = new EmbedBuilder().setTitle("Your gear got bored.");
+      const closeEmbed = new EmbedBuilder().setTitle(
+        "You stopped looking at your gear."
+      );
 
-        if(itemUsed) {
-          await selectInt.update({
-            content: 'Loading...'
+      let gearChoices = "";
+      let itemUsed = false;
+      let timeout = true;
+      gearCollector.on("collect", async (selectInt) => {
+        timeout = false;
+        gearChoices = selectInt.values;
+
+        if (gearChoices[0] === "close") {
+          return interaction.editReply({
+            content: "",
+            embeds: [closeEmbed],
+            components: [],
           });
-          await gearFunction(desc); // put this in end collector i think?
         }
-      }
-    })
 
-    gearCollector.on('end', async (collected, reason) => {
-      if(timeout) {
-        await interaction.editReply({
-          content: '',
-          embeds: [timeoutEmbed],
-          components: []
-        })
-      }
-    })
-  }
+        console.log(gearChoices);
+        console.log(userData.gear[gearChoices[0]]);
+
+        let desc = "";
+
+        if (gearChoices.length === 1) {
+          switch (userData.gear[gearChoices[0]].type) {
+            case "food":
+              console.log("food");
+              itemUsed = await useItem(
+                user,
+                userData,
+                userData.gear[gearChoices[0]].id
+              );
+              desc = `Your party will consume ${
+                userData.gear[gearChoices[0]].name
+              }s first.`;
+              break;
+            case "weapons":
+              console.log("weapons");
+              break;
+            case "misc":
+              console.log("misc");
+              break;
+            default:
+              console.log("ERROR: Item type does not exist.");
+              break;
+          }
+
+          if (itemUsed) {
+            await selectInt.update({
+              content: "Loading...",
+            });
+            await gearFunction(desc); // put this in end collector i think?
+          }
+        }
+      });
+
+      gearCollector.on("end", async (collected, reason) => {
+        if (timeout) {
+          await interaction.editReply({
+            content: "",
+            embeds: [timeoutEmbed],
+            components: [],
+          });
+        }
+      });
+    }
   },
 };

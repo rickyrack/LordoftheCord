@@ -17,7 +17,6 @@ const useItem = async (user, userData, itemID) => {
         case 'food':
             await useFood();
             return true;
-            break;
         case 'misc':
             
             break;
