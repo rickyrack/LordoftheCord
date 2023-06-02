@@ -22,11 +22,10 @@ module.exports = {
       return interaction.reply("Try /start to enter Discordia!");
     }
 
-    let gearOpen = true;
     let firstOpen = true;
 
-    gearFunction();
-    async function gearFunction() {
+    await gearFunction();
+    async function gearFunction(gearDesc) {
 
     const userData = await getUser(user);
 
@@ -81,6 +80,12 @@ module.exports = {
       );
     });
 
+    gearSelect.addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel('Close Gear')
+        .setValue('close')
+    );
+
     // gear selection selection menu
     const row1 = new ActionRowBuilder().addComponents(gearSelect);
 
@@ -96,12 +101,15 @@ module.exports = {
     if(firstOpen) {
       firstOpen = false;
       message = await interaction.reply({
+        content: '',
         embeds: [gearEmbed],
         components: [row1],
       });
     }
     else {
-      message = await interaction.followUp({
+      gearEmbed.setDescription(gearDesc);
+      message = await interaction.editReply({
+        content: '',
         embeds: [gearEmbed],
         components: [row1],
       });
@@ -114,26 +122,38 @@ module.exports = {
     const gearCollector = message.createMessageComponentCollector({
       filter: gearFilter,
       time: 60000
-    })
+    });
+
+    
+    const timeoutEmbed = new EmbedBuilder().setTitle("Your gear got bored.");
+    const closeEmbed = new EmbedBuilder().setTitle("You stopped looking at your gear.");
 
     let gearChoices = '';
     let itemUsed = false;
+    let timeout = true;
     gearCollector.on('collect', async (selectInt) => {
+      timeout = false;
       gearChoices = selectInt.values;
+
+      if(gearChoices[0] === 'close') {
+        return interaction.editReply({
+          content: '',
+          embeds: [closeEmbed],
+          components: []
+        })
+      }
 
       console.log(gearChoices);
       console.log(userData.gear[gearChoices[0]]);
-  
-      const itemEmbed = new EmbedBuilder()
+
+      let desc = '';
 
       if(gearChoices.length === 1) {
         switch (userData.gear[gearChoices[0]].type) {
           case 'food':
             console.log('food')
-            itemUsed = await useItem(user, userData, userData.gear[gearChoices[0]].id)
-            itemEmbed
-              .setTitle(`Your party will consume ${userData.gear[gearChoices[0]].name}s first.`)
-              .setDescription('Your party eats once per day and when you set up camp. idk');
+            itemUsed = await useItem(user, userData, userData.gear[gearChoices[0]].id);
+            desc = `Your party will consume ${userData.gear[gearChoices[0]].name}s first.`;
             break;
           case 'weapons':
             console.log('weapons')
@@ -147,12 +167,21 @@ module.exports = {
         }
 
         if(itemUsed) {
-          await interaction.editReply({
-            embeds: [itemEmbed],
-            components: []
-          })
-          gearFunction() // put this in end collector i think?
+          await selectInt.update({
+            content: 'Loading...'
+          });
+          await gearFunction(desc); // put this in end collector i think?
         }
+      }
+    })
+
+    gearCollector.on('end', async (collected, reason) => {
+      if(timeout) {
+        await interaction.editReply({
+          content: '',
+          embeds: [timeoutEmbed],
+          components: []
+        })
       }
     })
   }

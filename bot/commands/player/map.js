@@ -33,7 +33,7 @@ module.exports = {
         restart = false;
         mapFunction();
       }
-    }, 1000);
+    }, 300);
 
     async function mapFunction() {
       const userData = await getUser(user);
