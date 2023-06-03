@@ -32,7 +32,12 @@ const start = async (user) => {
         party: {},
         consumeFirst: '',
         equipped: {
-            hand: ['test1', 'test2', 'test3', 'test4'],
+            hand: {
+                1: 'test1',
+                2: 'test2',
+                3: 'test3',
+                4: 'test4'
+            },
             armor: {
                 head: 'test head',
                 body: 'test body',

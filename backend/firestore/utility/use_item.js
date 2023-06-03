@@ -1,7 +1,7 @@
 const { doc, getDoc, updateDoc, increment } = require("firebase/firestore")
 const { db } = require("../../firebase-config")
 
-const useItem = async (user, userData, itemID) => {
+const useItem = async (user, userData, itemID, replace) => {
     const userRef = doc(db, 'users', user.id);
     const userSnap = await getDoc(userRef);
 
@@ -13,6 +13,21 @@ const useItem = async (user, userData, itemID) => {
         })
     }
 
+    const useWeapon = async () => {
+        let oldSlot = null;
+        Object.keys(userSnap.data().equipped.hand).forEach(slot => {
+            if(userSnap.data().equipped.hand[slot] === itemID) oldSlot = slot;
+        })
+        if(oldSlot) {
+            updateDoc(userRef, {
+                [`equipped.hand.${[oldSlot]}`]: ""
+            })
+        }
+        updateDoc(userRef, {
+            [`equipped.hand.${[replace]}`]: itemID
+        })
+    }
+
     switch (userData.gear[itemID].type) {
         case 'food':
             await useFood();
@@ -21,15 +36,16 @@ const useItem = async (user, userData, itemID) => {
             
             break;
         case 'weapons':
-            
-            break;
+            await useWeapon();
+            return true;
         case 'armor':
             
             break;
-    
+        case 'amulet':
+            
+            break;
         default:
             return false;
-            break;
     }
 }
 

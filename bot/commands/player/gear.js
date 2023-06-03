@@ -98,23 +98,23 @@ module.exports = {
         console.log(type);
         if (type === "armor") {
           equippedOrder.armor = `\nHead: ${
-            userData.gear[userData.equipped.armor.head]?.name || "No Head Gear"
-          }\nBody: ${
-            userData.gear[userData.equipped.armor.body]?.name || "No Body Armor"
-          }\nLegs: ${
-            userData.gear[userData.equipped.armor.legs]?.name || "No Leg Armor"
-          }\n`;
+            userData.gear[userData.equipped.armor.head]?.name || "None"
+          } ${userData.gear[userData.equipped.armor.head]?.emoji || ""}\nBody: ${
+            userData.gear[userData.equipped.armor.body]?.name || "None"
+          } ${userData.gear[userData.equipped.armor.body]?.emoji || ""}\nLegs: ${
+            userData.gear[userData.equipped.armor.legs]?.name || "None"
+          } ${userData.gear[userData.equipped.armor.legs]?.emoji || ""}\n`;
         } else if (type === "hand") {
           equippedOrder.equipped = `\nEquipped:\n${
-            userData.gear[userData.equipped?.hand[0]]?.name || "None"
-          } ${userData.gear[userData.equipped?.hand[0]]?.emoji}\n${userData.gear[userData.equipped?.hand[1]]?.name || "None"} ${userData.gear[userData.equipped?.hand[1]]?.emoji}\n${
-            userData.gear[userData.equipped?.hand[2]]?.name || "None"
-          } ${userData.gear[userData.equipped?.hand[2]]?.emoji}\n${userData.gear[userData.equipped?.hand[3]]?.name || "None"} ${userData.gear[userData.equipped?.hand[3]]?.emoji}\n`;
+            userData.gear[userData.equipped.hand?.[1]]?.name || "None"
+          } ${userData.gear[userData.equipped.hand?.[1]]?.emoji || ""}\n${userData.gear[userData.equipped.hand?.[2]]?.name || "None"} ${userData.gear[userData.equipped.hand?.[2]]?.emoji || ""}\n${
+            userData.gear[userData.equipped.hand?.[3]]?.name || "None"
+          } ${userData.gear[userData.equipped.hand?.[3]]?.emoji || ""}\n${userData.gear[userData.equipped.hand?.[4]]?.name || "None"} ${userData.gear[userData.equipped.hand?.[4]]?.emoji || ""}\n`;
         } else if (type === "amulet") {
           equippedOrder.amulet = `\nAmulet:\n${
             userData.gear[userData.equipped?.amulet]?.name ||
-            "No Amulet Equipped"
-          }`;
+            "None"
+          } ${userData.gear[userData.equipped?.amulet]?.emoji || ""}`;
         }
       });
       equippedString = `Armor:${equippedOrder.armor}${equippedOrder.equipped}${equippedOrder.amulet}`;
@@ -170,9 +170,34 @@ module.exports = {
       let gearChoices = "";
       let itemUsed = false;
       let timeout = true;
+      let activeWeapPrompt = false;
+      let activeWeapSlot = null;
+      let activeWeapChoice = null;
       gearCollector.on("collect", async (selectInt) => {
         timeout = false;
         gearChoices = selectInt.values;
+
+        // uses same collector for active weapon selection
+        if (activeWeapPrompt === true) {
+          gearChoices = "";
+          itemUsed = false;
+          timeout = true;
+          activeWeapPrompt = false;
+          await selectInt.update({
+            content: "Loading...",
+          });
+          activeWeapSlot = selectInt.customId;
+          itemUsed = await useItem(
+            user,
+            userData,
+            activeWeapChoice,
+            activeWeapSlot
+          )
+          activeWeapSlot = null;
+          activeWeapChoice = null;
+          gearCollector.stop('loading');
+          return await gearFunction('test'); 
+        }
 
         if (gearChoices[0] === "close") {
           return interaction.editReply({
@@ -187,7 +212,7 @@ module.exports = {
 
         let desc = "";
 
-        if (gearChoices.length === 1) {
+        if (gearChoices.length === 1 && !activeWeapPrompt) {
           switch (userData.gear[gearChoices[0]].type) {
             case "food":
               console.log("food");
@@ -202,6 +227,24 @@ module.exports = {
               break;
             case "weapons":
               console.log("weapons");
+              const activeWeaponsEmbed = new EmbedBuilder()
+                .setTitle('Select a weapon slot to replace.')
+              const activeWeaponsRow = new ActionRowBuilder()
+              for (let i = 0; i < 4; i++) {
+                const itemID = userData.equipped.hand[i+1];
+                activeWeaponsRow.addComponents(
+                new ButtonBuilder()
+                  .setCustomId(`${i+1}`)
+                  .setLabel(userData.gear?.[itemID]?.id || `Slot ${i+1}`)
+                  .setStyle(ButtonStyle.Secondary)
+                );
+              }
+              await selectInt.update({
+                embeds: [activeWeaponsEmbed],
+                components: [activeWeaponsRow]
+              })
+              activeWeapPrompt = true;
+              activeWeapChoice = userData.gear[gearChoices[0]].id;
               break;
             case "misc":
               console.log("misc");
@@ -211,17 +254,25 @@ module.exports = {
               break;
           }
 
-          if (itemUsed) {
+          if (itemUsed && !activeWeapPrompt) {
             await selectInt.update({
               content: "Loading...",
             });
+            gearCollector.stop();
             await gearFunction(desc); // put this in end collector i think?
           }
         }
       });
 
       gearCollector.on("end", async (collected, reason) => {
-        if (timeout) {
+        if(reason === 'loading') {
+          await interaction.editReply({
+            content: "Loading...",
+            embeds: [],
+            components: [],
+          });
+        }
+        else if (timeout) {
           await interaction.editReply({
             content: "",
             embeds: [timeoutEmbed],
