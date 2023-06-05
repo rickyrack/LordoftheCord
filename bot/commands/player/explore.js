@@ -21,6 +21,14 @@ module.exports = {
         const tile = getTile(userData);
 
         const itemsFound = await explore(userData, user);
+		
+		if(!itemsFound) {
+			const noExploreEmbed = new EmbedBuilder()
+				.setTitle('Your party does not have enough morale to explore.')
+				.setDescription('Try setting up camp, visiting a town or winning a battle.');
+		
+			return interaction.reply({ embeds: [noExploreEmbed] });
+		}
 
 		let itemsString = '';
 

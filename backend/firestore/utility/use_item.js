@@ -5,7 +5,8 @@ const useItem = async (user, userData, itemID, replace) => {
     const userRef = doc(db, 'users', user.id);
     const userSnap = await getDoc(userRef);
 
-    if(userSnap.data().gear[itemID].quantity === 0) return false;
+    if(!userSnap.data().gear?.[itemID]?.quantity ||
+        userSnap.data().gear[itemID].quantity === 0) return false;
 
     const useFood = async () => {
         updateDoc(userRef, {
@@ -18,6 +19,7 @@ const useItem = async (user, userData, itemID, replace) => {
         Object.keys(userSnap.data().equipped.hand).forEach(slot => {
             if(userSnap.data().equipped.hand[slot] === itemID) oldSlot = slot;
         })
+        if(oldSlot === replace) return;
         if(oldSlot) {
             updateDoc(userRef, {
                 [`equipped.hand.${[oldSlot]}`]: ""
@@ -35,15 +37,9 @@ const useItem = async (user, userData, itemID, replace) => {
         case 'misc':
             
             break;
-        case 'weapons':
+        case 'weapons' || 'armor' || 'amulet':
             await useWeapon();
             return true;
-        case 'armor':
-            
-            break;
-        case 'amulet':
-            
-            break;
         default:
             return false;
     }

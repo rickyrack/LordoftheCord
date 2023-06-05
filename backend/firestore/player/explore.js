@@ -2,6 +2,7 @@ const { doc, getDoc } = require("firebase/firestore");
 const { getTile } = require("../../../bot/helper/locations/get_tile");
 const { db } = require("../../firebase-config");
 const { addItem } = require("../utility/add_item");
+const { updateMorale } = require("../utility/update_morale");
 
 const explore = async (userData, user) => {
     const tile = getTile(userData);
@@ -29,6 +30,8 @@ const explore = async (userData, user) => {
     for (let i = 0; i < multiplier; i++) {
         items.push(availItems[Math.floor(Math.random() * availItems.length)]);
     }
+
+    if(!await updateMorale(user, 'explore', multiplier, userData)) return false;
 
     for (let i = 0; i < items.length; i++) {
         await addItem(user, items[i]);

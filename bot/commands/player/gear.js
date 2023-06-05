@@ -10,6 +10,7 @@ const {
 const { userCheck } = require("../../../backend/firestore/utility/user_check");
 const { getUser } = require("../../../backend/firestore/utility/get_user");
 const { useItem } = require("../../../backend/firestore/utility/use_item");
+const { updateEquipped } = require("../../../backend/firestore/utility/update_equipped");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,6 +28,8 @@ module.exports = {
     await gearFunction();
     async function gearFunction(gearDesc) {
       const userData = await getUser(user);
+
+      await updateEquipped(user, userData);
 
       console.log(userData.gear);
 
