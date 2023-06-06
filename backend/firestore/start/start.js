@@ -18,9 +18,10 @@ const start = async (user) => {
             health: 100,
             morale: 80,
             level: 1,
-            player: {},
-            party: {
-                exploration: 1,
+            player: { // only affects player
+                stength: 1
+            },
+            party: { // affects player AND party
                 pathfinding: 1,
                 leadership: 1,
                 spotting: 1,
@@ -33,18 +34,18 @@ const start = async (user) => {
         consumeFirst: '',
         equipped: {
             hand: {
-                1: 'test1',
-                2: 'test2',
-                3: 'test3',
-                4: 'test4'
+                1: '',
+                2: '',
+                3: '',
+                4: ''
             },
             armor: {
-                head: 'test head',
-                body: 'test body',
-                legs: 'test legs'
+                head: '',
+                body: '',
+                legs: ''
             },
-            amulet: 'test amulet',
-            horse: 'future feature'
+            amulet: ''
+            //horse: 'future feature'
         }
     });
 

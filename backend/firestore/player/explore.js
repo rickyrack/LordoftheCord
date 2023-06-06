@@ -18,12 +18,14 @@ const explore = async (userData, user) => {
         }
     });
 
-    let partySize = 1; // accounts for self
+    /*let partySize = 1; // accounts for self
     Object.values(userData.party).forEach(unitAmt => {
         partySize += unitAmt;
-    })
-    
-    const multiplier = userData.stats.party.exploration * Math.ceil(partySize/50);
+    })*/
+
+    //const multiplier = userData.stats.party.exploration * Math.ceil(partySize/50);
+    let multiplier = Math.ceil(Math.random() * (userData.stats.party.spotting * 5)) + 1;
+    console.log(multiplier);
 
     let items = [];
 
@@ -31,7 +33,7 @@ const explore = async (userData, user) => {
         items.push(availItems[Math.floor(Math.random() * availItems.length)]);
     }
 
-    if(!await updateMorale(user, 'explore', multiplier, userData)) return false;
+    if(!await updateMorale(user, 'explore', 1, userData)) return false;
 
     for (let i = 0; i < items.length; i++) {
         await addItem(user, items[i]);

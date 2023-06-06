@@ -11,17 +11,22 @@ const updateMorale = async (user, action, multiplier, userData) => {
         userData = userSnap.data();
     }
 
-    // mult not always necessary
+    // mult not always necessary but should be sent as 1 in that case
     if(!multiplier) multiplier = 1;
 
     let moraleChange = 0;
     switch (action) {
         case 'explore':
-            moraleChange = 3;
+            moraleChange = 10;
+            break;
+        case 'move':
+            moraleChange = Math.ceil(0.4 * (1 + Object.keys(userData.party).length));
             break;
     }
 
-    moraleChange = moraleChange * multiplier;
+    const upkeepModifier = 1 - userData.stats.party.upkeep * .05;
+
+    moraleChange = Math.ceil(moraleChange * multiplier * upkeepModifier);
     if (userData.stats.morale - moraleChange <= 0) return false;
     else {
         updateDoc(userRef, {
