@@ -60,6 +60,7 @@ module.exports = {
       };
 
       const locations = await getLocations();
+      console.log(locations)
 
       for (let h = 0; h < 9; h++) {
         for (let w = 0; w < 9; w++) {

@@ -10,6 +10,7 @@ module.exports = {
 		.setName('explore')
 		.setDescription('Explore the area.'),
 	async execute(interaction) {
+		interaction.deferReply();
 		const user = interaction.user;
 
 		if(!await userCheck(user)) {
@@ -35,6 +36,8 @@ module.exports = {
 		itemsFound.forEach(item => {
 			itemsString += `[1] ${item}\n`
 		})
+		console.log(itemsString);
+		console.log(tile);
 
         const exploreEmbed = new EmbedBuilder()
             .setTitle(`You explore the ${tile.type}`)
@@ -44,6 +47,6 @@ module.exports = {
 				name: 'Your exploring payed off, you found:', value: `${itemsString}`
 			})
 
-		return interaction.reply({ embeds: [exploreEmbed] });
+		return interaction.editReply({ embeds: [exploreEmbed] });
 	},
 };

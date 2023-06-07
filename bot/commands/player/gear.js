@@ -84,7 +84,7 @@ module.exports = {
             .setDescription(
               "This is based on type of item, ex: food gets morale, weapons get damage etc"
             )
-            .setValue(`${userData.gear[itemID].id}`)
+            .setValue(`${itemID}`)
         );
       });
 
@@ -222,7 +222,7 @@ module.exports = {
               itemUsed = await useItem(
                 user,
                 userData,
-                userData.gear[gearChoices[0]].id
+                userData.gear[gearChoices[0]]
               );
               desc = `Your party will consume ${
                 userData.gear[gearChoices[0]].name
@@ -238,7 +238,7 @@ module.exports = {
                 activeWeaponsRow.addComponents(
                 new ButtonBuilder()
                   .setCustomId(`${i+1}`)
-                  .setLabel(userData.gear?.[itemID]?.id || `Slot ${i+1}`)
+                  .setLabel(userData.gear?.[itemID].name || `Slot ${i+1}`)
                   .setStyle(ButtonStyle.Secondary)
                 );
               }
@@ -247,7 +247,7 @@ module.exports = {
                 components: [activeWeaponsRow]
               })
               activeWeapPrompt = true;
-              activeWeapChoice = userData.gear[gearChoices[0]].id;
+              activeWeapChoice = userData.gear[gearChoices[0]];
               break;
             case "misc":
               console.log("misc");

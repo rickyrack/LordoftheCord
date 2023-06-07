@@ -41,6 +41,7 @@ const useItem = async (user, userData, itemID, replace) => {
             await useWeapon();
             return true;
         default:
+            console.log('useItem Error');
             return false;
     }
 }
