@@ -30,7 +30,7 @@ const start = async (user) => {
             }
         },
         gear: {},
-        party: {},
+        party: [],
         consumeFirst: '',
         equipped: {
             hand: {

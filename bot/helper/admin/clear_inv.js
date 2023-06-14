@@ -34,7 +34,7 @@ const adminClearInv = async (user, interaction) => {
   collector.on("collect", async (i) => {
     timeout = false;
     if (i.customId === "confirm") {
-      const result = await clearInv(user);
+      const result = await clearInv(targetUser);
       if (result) {
         return interaction.editReply({
           content: `Cleared ${targetUser} inventory.`,

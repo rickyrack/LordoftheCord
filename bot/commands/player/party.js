@@ -1,8 +1,9 @@
 const { EmbedBuilder } = require('@discordjs/builders');
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, SelectMenuBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { userCheck } = require('../../../backend/firestore/utility/user_check');
 const { getUser } = require('../../../backend/firestore/utility/get_user');
 const { maxParty } = require('../../helper/stats/max_party');
+const { Party } = require('../../helper/models/PartyClass');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -17,14 +18,27 @@ module.exports = {
 
         const userData = await getUser(user);
 
-        let unitString = '';
-        Object.keys(userData.party).forEach(unit => {
-            
-        })
+        let unitString = 'test';
+
+        const party = new Party(userData.party);
+
+        console.log(party.units)
+        console.log(party.shortList());
+
+        const promoteMenu = new StringSelectMenuBuilder()
+
+        // LEFT OFF NOTES
+        // FIX SHORTLIST (run /party and check console to see problem)
+
+        // NEED JSON DOC TO SHOW WHEN USER IS ACTIVE/HAS ACTIVE COMMAND
+        // SO THAT TWO CANNOT BE USED AT SAME TIME, FIRESTORE WOULD BE TOO SLOW
+
+        // MAKE CLASS FOR ALL USERDATA WITH FUNCTIONS??
 
         const partyEmbed = new EmbedBuilder()
             .setTitle(`${user.username}'s party`)
             .setDescription(`Morale: ${userData.stats.morale}\nParty Size: ${Object.keys(userData.party).length}/${maxParty(userData)} units`)
+            .addFields({name: `${unitString}`, value:' '})
 
         return interaction.reply({
             embeds: [partyEmbed]

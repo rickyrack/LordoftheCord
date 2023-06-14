@@ -4,7 +4,7 @@ const adminGive = async (user, interaction) => {
     const itemID = interaction.options.getString("itemid");
     const targetUser = interaction.options.getUser("user");
     
-    const result = await addItem(user, itemID);
+    const result = await addItem(targetUser, itemID);
     
     if (result) {
       return interaction.reply(`Added 1 ${itemID} to ${targetUser}`);
