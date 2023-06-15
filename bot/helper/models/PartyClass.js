@@ -1,6 +1,7 @@
 class Party {
-    constructor(party) {
-        this.party = party;
+    constructor(userData) {
+        this.party = userData.party;
+        this.stats = userData.stats;
     }
     get units() {
         return this.party;

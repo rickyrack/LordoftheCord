@@ -4,25 +4,26 @@ const { userCheck } = require('../../../backend/firestore/utility/user_check');
 const { getUser } = require('../../../backend/firestore/utility/get_user');
 const { maxParty } = require('../../helper/stats/max_party');
 const { Party } = require('../../helper/models/PartyClass');
+const { setActive, useCommand } = require('../../../backend/misc/active_users');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('party')
 		.setDescription('Check your party and morale.'),
 	async execute(interaction) {
-		const user = interaction.user;
+        const { user, userData } = await useCommand(interaction);
+		/*const user = interaction.user;
 
 		if(!await userCheck(user)) {
-			return interaction.reply('Try /start to enter Discordia!')
+			return interaction.reply('Try /start to enter Discordia!');
 		}
 
-        const userData = await getUser(user);
+        const userData = await getUser(user);*/
 
         let unitString = 'test';
 
-        const party = new Party(userData.party);
+        const party = new Party(userData);
 
-        console.log(party.units)
         console.log(party.shortList());
 
         const promoteMenu = new StringSelectMenuBuilder()
@@ -40,6 +41,7 @@ module.exports = {
             .setDescription(`Morale: ${userData.stats.morale}\nParty Size: ${Object.keys(userData.party).length}/${maxParty(userData)} units`)
             .addFields({name: `${unitString}`, value:' '})
 
+        //setActive(user.id, false);
         return interaction.reply({
             embeds: [partyEmbed]
         });
