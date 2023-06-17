@@ -80,7 +80,7 @@ class Party {
 
         let stringArray = [];
         Object.keys(shortListRawData).forEach(unitData => {
-            stringArray.push(`[${shortListRawData[unitData].amount}] ${shortListRawData[unitData].name} ++${shortListRawData[unitData].promos}`);
+            stringArray.push(`[${shortListRawData[unitData].amount}] ${shortListRawData[unitData].name} ${shortListRawData[unitData].promos}+`);
         })
         return stringArray;
     }

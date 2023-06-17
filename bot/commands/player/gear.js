@@ -17,16 +17,19 @@ module.exports = {
     .setName("gear")
     .setDescription("Look at your gear."),
   async execute(interaction) {
-    const { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
+    let { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
 
     let firstOpen = true;
 
     await gearFunction();
     async function gearFunction(gearDesc) {
-      const userData = await getUser(user);
+      userData = await getUser(user);
+      if (!userData) userData = await getUser(user); // TEMP BUG FIX
 
       await updateEquipped(user, userData);
 
+      console.log('this')
+      console.log(userData.gear)
       Object.keys(userData.gear).forEach((itemID) => {
         if (userData.gear[itemID].quantity === 0) delete userData.gear[itemID];
       });

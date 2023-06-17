@@ -15,7 +15,7 @@ const { useCommand, setActive } = require("../../../backend/misc/active_users");
 module.exports = {
   data: new SlashCommandBuilder().setName("map").setDescription("map TEST"),
   async execute(interaction) {
-    const { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
+    let { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
 
     let mapOpen = true;
     let restart = true;
@@ -33,7 +33,8 @@ module.exports = {
     }, 300);
 
     async function mapFunction() {
-      const userData = await getUser(user);
+      userData = await getUser(user);
+      if(!userData) userData = await getUser(user);
 
       const mapData = require("../../../backend/map/map.json").map;
       let tileSet = require("../../../backend/map/tile_set.json");
