@@ -5,35 +5,45 @@ const { userCheck } = require("../firestore/utility/user_check");
 const activeUsers = new Map();
 
 const doubleCommandEmbed = new EmbedBuilder()
-    .setTitle('You cannot have two commands open at once.\nClose the previous command or wait for the timer.');
+    .setTitle('You cannot have two commands in use at once.\nClose the previous command or wait for the timer.');
 
 const checkActive = async (interaction) => {
     const user = interaction.user;
-        console.log(activeUsers.get(user.id))
         if (activeUsers.get(user.id)) {
-            console.log('early reply');
-        await interaction.reply({ embeds: [doubleCommandEmbed] });
-        return 'active user';
+            await interaction.reply({ embeds: [doubleCommandEmbed] });
+            return true;
         }
-        console.log(`${user.id} is inactive`);
 }
 
 const setActive = (userID, userActive) => activeUsers.set(userID, userActive);
 
-const useCommand = async (interaction) => {
+const useCommand = async (interaction, skipUserData) => {
     const user = interaction.user;
 
-    if(await checkActive(interaction) === 'active user');
+    const closeCommand = await checkActive(interaction);
 
     if(!await userCheck(user)) return interaction.reply('Try /start to enter Discordia!');
 
-    const userData = await getUser(user);
-    console.log(userData);
+    let userData = {};
+
+    if (!skipUserData) {
+        userData = await getUser(user);
+    }
+
+    if (closeCommand) userData.closeCommand = true;
 
     setActive(user.id, true);
 
-    console.log(activeUsers);
     return { user, userData };
 }
 
 module.exports = { useCommand, checkActive, setActive };
+
+        // OLD WAY OF STARTING MOST COMMANDS FOR REFERENCE
+		/*const user = interaction.user;
+
+		if(!await userCheck(user)) {
+			return interaction.reply('Try /start to enter Discordia!');
+		}
+
+        const userData = await getUser(user);*/

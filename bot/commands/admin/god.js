@@ -7,6 +7,8 @@ const { addItem } = require("../../../backend/firestore/utility/add_item");
 const { adminGive } = require("../../helper/admin/give");
 const { adminClearInv } = require("../../helper/admin/clear_inv");
 const { adminRecruit } = require("../../helper/admin/recruit");
+const { adminClearParty } = require("../../helper/admin/clear_party");
+const { adminError } = require("../../helper/admin/admin_error");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,12 +16,18 @@ module.exports = {
     .setDescription("Do not mess with the church!.")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("empty")
-        .setDescription("Clear a user's inventory.")
+        .setName("clear")
+        .setDescription("Clear a user's inventory or party.")
+        .addStringOption((option) =>
+          option
+            .setName("field")
+            .setDescription("Field to clear. Options: inv, party")
+            .setRequired(true)
+        )
         .addUserOption((option) =>
           option
             .setName("user")
-            .setDescription("User who's inventory you want to empty.")
+            .setDescription("User this command is applied to.")
             .setRequired(true)
         )
     )
@@ -76,8 +84,22 @@ module.exports = {
 
     if (interaction.options.getSubcommand() === "give") {
       await adminGive(user, interaction);
-    } else if (interaction.options.getSubcommand() === "empty") {
-      await adminClearInv(user, interaction);
+    } else if (interaction.options.getSubcommand() === "clear") {
+      const clearField = interaction.options.getString("field");
+      switch (clearField) {
+        case "inv":
+          await adminClearInv(user, interaction);
+          break;
+        case "party":
+          await adminClearParty(user, interaction);
+          break;
+        default:
+          const errorMsg = "God Command Error: Field to clear does not exist.";
+          console.log("God Command Error: Field to clear does not exist.");
+          adminError(errorMsg, interaction);
+          break;
+      }
+
     } else if (interaction.options.getSubcommand() === "recruit") {
       await adminRecruit(user, interaction);
     }

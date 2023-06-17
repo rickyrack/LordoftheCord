@@ -7,21 +7,17 @@ const {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } = require("discord.js");
-const { userCheck } = require("../../../backend/firestore/utility/user_check");
 const { getUser } = require("../../../backend/firestore/utility/get_user");
 const { useItem } = require("../../../backend/firestore/utility/use_item");
 const { updateEquipped } = require("../../../backend/firestore/utility/update_equipped");
+const { useCommand, setActive } = require("../../../backend/misc/active_users");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("gear")
     .setDescription("Look at your gear."),
   async execute(interaction) {
-    const user = interaction.user;
-
-    if (!(await userCheck(user))) {
-      return interaction.reply("Try /start to enter Discordia!");
-    }
+    const { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
 
     let firstOpen = true;
 
@@ -30,8 +26,6 @@ module.exports = {
       const userData = await getUser(user);
 
       await updateEquipped(user, userData);
-
-      console.log(userData.gear);
 
       Object.keys(userData.gear).forEach((itemID) => {
         if (userData.gear[itemID].quantity === 0) delete userData.gear[itemID];
@@ -46,6 +40,7 @@ module.exports = {
             name: "You have no gear!",
             value: " ",
           });
+        setActive(user.id, false);
         return interaction.reply({
           embeds: [noGearEmbed],
         });
@@ -98,7 +93,6 @@ module.exports = {
 
       // DO NOT CHANGE SPACING OF LINES(affects embed spacing)
       Object.keys(userData.equipped).forEach((type) => {
-        console.log(type);
         if (type === "armor") {
           equippedOrder.armor = `\nHead: ${
             userData.gear[userData.equipped.armor.head]?.name || "None"
@@ -203,6 +197,7 @@ module.exports = {
         }
 
         if (gearChoices[0] === "close") {
+          setActive(user.id, false);
           return interaction.editReply({
             content: "",
             embeds: [closeEmbed],
@@ -210,26 +205,21 @@ module.exports = {
           });
         }
 
-        console.log(gearChoices);
-        console.log(userData.gear[gearChoices[0]]);
-
         let desc = "";
 
         if (gearChoices.length === 1 && !activeWeapPrompt) {
           switch (userData.gear[gearChoices[0]].type) {
             case "food":
-              console.log("food");
               itemUsed = await useItem(
                 user,
                 userData,
-                userData.gear[gearChoices[0]]
+                gearChoices[0]
               );
               desc = `Your party will consume ${
                 userData.gear[gearChoices[0]].name
               }s first.`;
               break;
             case "weapons":
-              console.log("weapons");
               const activeWeaponsEmbed = new EmbedBuilder()
                 .setTitle('Select a weapon slot to replace.')
               const activeWeaponsRow = new ActionRowBuilder()
@@ -238,7 +228,7 @@ module.exports = {
                 activeWeaponsRow.addComponents(
                 new ButtonBuilder()
                   .setCustomId(`${i+1}`)
-                  .setLabel(userData.gear?.[itemID].name || `Slot ${i+1}`)
+                  .setLabel(userData.gear?.[itemID]?.name || `Slot ${i+1}`)
                   .setStyle(ButtonStyle.Secondary)
                 );
               }
@@ -247,10 +237,9 @@ module.exports = {
                 components: [activeWeaponsRow]
               })
               activeWeapPrompt = true;
-              activeWeapChoice = userData.gear[gearChoices[0]];
+              activeWeapChoice = gearChoices[0];
               break;
             case "misc":
-              console.log("misc");
               break;
             default:
               console.log("ERROR: Item type does not exist.");
@@ -276,6 +265,7 @@ module.exports = {
           });
         }
         else if (timeout) {
+          setActive(user.id, false);
           await interaction.editReply({
             content: "",
             embeds: [timeoutEmbed],

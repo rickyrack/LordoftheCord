@@ -5,21 +5,17 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
 } = require("discord.js");
-const { userCheck } = require("../../../backend/firestore/utility/user_check");
 const { getUser } = require("../../../backend/firestore/utility/get_user");
 const { move } = require("../../../backend/firestore/player/move");
 const {
   getLocations,
 } = require("../../../backend/firestore/utility/get_locations");
+const { useCommand, setActive } = require("../../../backend/misc/active_users");
 
 module.exports = {
   data: new SlashCommandBuilder().setName("map").setDescription("map TEST"),
   async execute(interaction) {
-    const user = interaction.user;
-
-    if (!(await userCheck(user))) {
-      return interaction.reply("Try /start to enter Discordia!");
-    }
+    const { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
 
     let mapOpen = true;
     let restart = true;
@@ -27,6 +23,7 @@ module.exports = {
 
     const mapOpenCheck = setInterval(() => {
       if (!mapOpen) {
+        setActive(user.id, false);
         clearInterval(mapOpenCheck);
       }
       if (restart && mapOpen) {

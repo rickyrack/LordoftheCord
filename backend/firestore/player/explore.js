@@ -7,7 +7,7 @@ const { updateMorale } = require("../utility/update_morale");
 const explore = async (userData, user) => {
     const tile = getTile(userData);
 
-    const tileRef = doc(db, 'tiles', tile.type)
+    const tileRef = doc(db, 'tiles', tile.type);
     const tileSnap = await getDoc(tileRef);
 
     const availItems = [];

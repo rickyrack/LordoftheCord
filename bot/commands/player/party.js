@@ -1,7 +1,5 @@
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder, SelectMenuBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { userCheck } = require('../../../backend/firestore/utility/user_check');
-const { getUser } = require('../../../backend/firestore/utility/get_user');
 const { maxParty } = require('../../helper/stats/max_party');
 const { Party } = require('../../helper/models/PartyClass');
 const { setActive, useCommand } = require('../../../backend/misc/active_users');
@@ -11,30 +9,19 @@ module.exports = {
 		.setName('party')
 		.setDescription('Check your party and morale.'),
 	async execute(interaction) {
-        const { user, userData } = await useCommand(interaction);
-		/*const user = interaction.user;
+        const { user, userData } = await useCommand(interaction); if (userData.closeCommand) return;
 
-		if(!await userCheck(user)) {
-			return interaction.reply('Try /start to enter Discordia!');
-		}
-
-        const userData = await getUser(user);*/
-
-        let unitString = 'test';
+        let unitString = '';
 
         const party = new Party(userData);
 
-        console.log(party.shortList());
+        party.shortListWithPromos().forEach(unit => {
+            unitString += `${unit}\n`
+        })
+
+        console.log(party.shortListWithPromos());
 
         const promoteMenu = new StringSelectMenuBuilder()
-
-        // LEFT OFF NOTES
-        // FIX SHORTLIST (run /party and check console to see problem)
-
-        // NEED JSON DOC TO SHOW WHEN USER IS ACTIVE/HAS ACTIVE COMMAND
-        // SO THAT TWO CANNOT BE USED AT SAME TIME, FIRESTORE WOULD BE TOO SLOW
-
-        // MAKE CLASS FOR ALL USERDATA WITH FUNCTIONS??
 
         const partyEmbed = new EmbedBuilder()
             .setTitle(`${user.username}'s party`)

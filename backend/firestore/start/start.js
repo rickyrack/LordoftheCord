@@ -19,7 +19,7 @@ const start = async (user) => {
             morale: 80,
             level: 1,
             player: { // only affects player
-                stength: 1
+                strength: 1
             },
             party: { // affects player AND party
                 pathfinding: 1,

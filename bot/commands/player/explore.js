@@ -1,9 +1,8 @@
 const { EmbedBuilder } = require('@discordjs/builders');
 const { SlashCommandBuilder } = require('discord.js');
-const { userCheck } = require('../../../backend/firestore/utility/user_check');
 const { explore } = require('../../../backend/firestore/player/explore');
-const { getUser } = require('../../../backend/firestore/utility/get_user');
 const { getTile } = require('../../helper/locations/get_tile');
+const { useCommand } = require('../../../backend/misc/active_users');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -11,13 +10,7 @@ module.exports = {
 		.setDescription('Explore the area.'),
 	async execute(interaction) {
 		interaction.deferReply();
-		const user = interaction.user;
-
-		if(!await userCheck(user)) {
-			return interaction.reply('Try /start to enter Discordia!')
-		}
-
-        const userData = await getUser(user);
+        const { user, userData } = await useCommand(interaction); if (userData.closeCommand) return;
 
         const tile = getTile(userData);
 
@@ -47,6 +40,7 @@ module.exports = {
 				name: 'Your exploring payed off, you found:', value: `${itemsString}`
 			})
 
+		setActive(user.id, false);
 		return interaction.editReply({ embeds: [exploreEmbed] });
 	},
 };

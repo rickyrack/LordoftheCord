@@ -4,7 +4,6 @@ const { db } = require("../../firebase-config")
 const useItem = async (user, userData, itemID, replace) => {
     const userRef = doc(db, 'users', user.id);
     const userSnap = await getDoc(userRef);
-
     if(!userSnap.data().gear?.[itemID]?.quantity ||
         userSnap.data().gear[itemID].quantity === 0) return false;
 
