@@ -3,14 +3,23 @@ const { SlashCommandBuilder, SelectMenuBuilder, StringSelectMenuBuilder, ButtonB
 const { maxParty } = require('../../helper/stats/max_party');
 const { Party } = require('../../helper/models/PartyClass');
 const { setActive, useCommand } = require('../../../backend/misc/active_users');
+const { getUser } = require('../../../backend/firestore/utility/get_user');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('party')
 		.setDescription('Check your party and morale.'),
 	async execute(interaction) {
-        const { user, userData } = await useCommand(interaction); if (userData.closeCommand) return;
+        let { user, userData } = await useCommand(interaction, true); if (userData.closeCommand) return;
 
+        let firstOpen = true;
+
+        await partyFunction();
+        async function partyFunction(partyDesc) {
+        console.log('START FUNC')
+        userData = await getUser(user);
+        if (!userData) userData = await getUser(user); // TEMP BUG FIX
+        
         let unitString = '';
 
         const party = new Party(userData);
@@ -46,32 +55,34 @@ module.exports = {
             .setDescription(`Morale: ${userData.stats.morale}\nParty Size: ${Object.keys(userData.party).length}/${maxParty(userData)} units`)
             .addFields({name: `${unitString}`, value:' '})
 
+        const partyMsg = new EmbedBuilder()
+            .setTitle(`${partyDesc}`)
+
         // Party Editing Buttons
         // promotion
         const promoteOne = new ButtonBuilder()
             .setCustomId('promoOne')
-            .setLabel('Promote One')
+            .setLabel('Promote 1 Unit')
             .setStyle(ButtonStyle.Success)
-            .setDisabled(true)
         const promoteSelected = new ButtonBuilder()
             .setCustomId('promoGroup')
-            .setLabel('Promote Group')
+            .setLabel('Promote Units')
             .setStyle(ButtonStyle.Success)
         const promoteAll = new ButtonBuilder()
             .setCustomId('promoParty')
-            .setLabel('Promote All')
+            .setLabel('Promote All Units')
             .setStyle(ButtonStyle.Success)
         // dismiss
         const dismissOne = new ButtonBuilder()
             .setCustomId('dismissOne')
-            .setLabel('Dismiss One')
+            .setLabel('Dismiss 1 Unit')
             .setStyle(ButtonStyle.Danger)
         const dismissSelected = new ButtonBuilder()
             .setCustomId('dismissGroup')
-            .setLabel('Dismiss Group')
+            .setLabel('Dismiss Units')
             .setStyle(ButtonStyle.Danger)
         const disbandParty = new ButtonBuilder()
-            .setCustomId('disband')
+            .setCustomId('disbandParty')
             .setLabel('Disband Party')
             .setStyle(ButtonStyle.Danger)
 
@@ -96,11 +107,20 @@ module.exports = {
 
         let message;
 
-        // setActive(user.id, false);
-        message = await interaction.reply({
-            embeds: [partyEmbed],
-            components: [partySelectRow, promoRow, dismissRow]
-        });
+        if(firstOpen) {
+            firstOpen = false;
+            message = await interaction.reply({
+                embeds: [partyEmbed],
+                components: [partySelectRow, promoRow, dismissRow]
+            });
+        }
+        else {
+            message = await interaction.editReply({
+                content: '',
+                embeds: [partyMsg, partyEmbed],
+                components: [partySelectRow, promoRow, dismissRow]
+            });
+        }
 
         const partyFilter = i => {
             return i.user.id === user.id;
@@ -111,17 +131,42 @@ module.exports = {
             time: 60000
         })
 
-        partyCollector.on('collect', async i => {
-            promoteOne.setDisabled(false);
-            message = await interaction.editReply({
-                embeds: [partyEmbed],
-                components: [promoRow]//[partySelectRow, promoRow, dismissRow]
-            });
-            partyCollector.stop();
+        let unitChoices = [];
+        partyCollector.on('collect', async selectInt => {
+            let buttonChoice;
+            let desc = '';
+            if (!selectInt?.values && unitChoices.length === 0) { // button press without unit selected
+                await selectInt.update({
+                    content: "Loading...",
+                  });
+                partyCollector.stop('no unit');
+                desc = 'You did not select a unit/units!';
+                return partyFunction(desc);
+            }
+            else if (unitChoices.length > 0) { // button press with unit selected
+                if (unitChoices.length > 0 && selectInt.customId === 'promoOne' || selectInt.customId === 'dismissOne') {
+                    // handles promoting one unit with too many selected
+                    await selectInt.update({
+                        content: "Loading...",
+                        });
+                    partyCollector.stop('too many units');
+                    desc = 'Select one unit type to promote a single unit.';
+                    return partyFunction(desc);
+                }
+                else if (selectInt.customId === 'promo')
+                console.log(selectInt.customId)
+            }
+            else { // select menu
+                unitChoices = selectInt.values;
+                await selectInt.deferUpdate();
+            }
         })
 
         partyCollector.on('end', async (collected, reason) => {
-
+            if(reason === 'no unit') {
+                console.log('no unit selected');
+            }
         })
+    }
     }
 }

@@ -10,7 +10,7 @@ module.exports = {
 		.setDescription('Explore the area.'),
 	async execute(interaction) {
 		interaction.deferReply();
-        const { user, userData } = await useCommand(interaction); if (userData.closeCommand) return;
+        let { user, userData } = await useCommand(interaction); if (userData.closeCommand) return;
 
         const tile = getTile(userData);
 

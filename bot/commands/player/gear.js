@@ -196,7 +196,7 @@ module.exports = {
           activeWeapSlot = null;
           activeWeapChoice = null;
           gearCollector.stop('loading');
-          return await gearFunction('test'); 
+          return gearFunction('test'); 
         }
 
         if (gearChoices[0] === "close") {
@@ -254,7 +254,7 @@ module.exports = {
               content: "Loading...",
             });
             gearCollector.stop();
-            await gearFunction(desc); // put this in end collector i think?
+            gearFunction(desc); // put this in end collector i think?
           }
         }
       });
