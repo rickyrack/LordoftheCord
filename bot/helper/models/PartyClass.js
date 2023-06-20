@@ -9,6 +9,15 @@ class Party {
     getUnitType(unitID) {
         return Object.keys(this.party[unitID])[0];
     }
+    getUnitClassByType(unitType) {
+        let unitClass = '';
+        Object.keys(this.party).forEach(unitId => {
+            if (Object.keys(this.party?.[unitId])[0] === unitType) {
+                unitClass = this.party[unitId].class;
+            }
+        })
+        return unitClass;
+    }
     getUnitMaxExp(unitID) {
         const rank = this.party[unitID][this.getUnitType(unitID)].rank;
         // const currentExp = this.party[unitID][this.getUnitType(unitID)].exp;
@@ -32,7 +41,7 @@ class Party {
         Object.keys(this.party).forEach(unit => {
             let addUnit = true;
             const type = this.getUnitType(unit);
-            const name = this.party[unit][this.getUnitType(unit)].name;
+            const name = this.party[unit][type].name;
             // first run will always be empty
             uniqueUnits.forEach(unitData => {
                 if (unitData.type === type) {
@@ -42,7 +51,8 @@ class Party {
             })
             if (addUnit) uniqueUnits.push({
                 type: type,
-                name: name
+                name: name,
+                otherData: this.party[unit][type]
             })
         })
 
@@ -50,6 +60,7 @@ class Party {
             unitAmounts[unitData.type] = {};
             unitAmounts[unitData.type].amount = 0;
             unitAmounts[unitData.type].name = unitData.name;
+            unitAmounts[unitData.type].otherData = unitData.otherData; // not always used
         })
 
         Object.keys(this.party).forEach(unit => {
@@ -65,7 +76,7 @@ class Party {
         })
         return stringArray;
     }
-    shortListWithPromos() {
+    shortListWithPromos(format) {
         const shortListRawData = this.shortList('rawData');
 
         Object.keys(shortListRawData).forEach(unitData => {
@@ -78,11 +89,19 @@ class Party {
             }
         })
 
+        // gives data as object instead of string
+        if (format === 'object') {
+            return shortListRawData;
+        }
+
         let stringArray = [];
         Object.keys(shortListRawData).forEach(unitData => {
             stringArray.push(`[${shortListRawData[unitData].amount}] ${shortListRawData[unitData].name} ${shortListRawData[unitData].promos}+`);
         })
         return stringArray;
+    }
+    typeList() {
+        return this.shortList('rawData');
     }
 }
 

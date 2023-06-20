@@ -20,6 +20,7 @@ const addUnits = async (user, unitID, amount, userData) => {
                 unitData[unit] = doc.data()[unit];
                 unitData[unit].type = doc.id;
                 unitData[unit].exp = 0;
+                unitData[unit].class = doc.id;
             }
         })
     })
