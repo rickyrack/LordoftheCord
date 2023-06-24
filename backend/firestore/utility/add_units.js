@@ -17,10 +17,10 @@ const addUnits = async (user, unitID, amount, userData) => {
     unitsCollSnap.forEach(doc => {
         Object.keys(doc.data()).forEach(unit => {
             if (unit === unitID) {
-                unitData[unit] = doc.data()[unit];
-                unitData[unit].type = doc.id;
-                unitData[unit].exp = 0;
-                unitData[unit].class = doc.id;
+                unitData = doc.data()[unit];
+                unitData.type = unit;
+                unitData.exp = 0;
+                unitData.class = doc.id;
             }
         })
     })
@@ -30,7 +30,11 @@ const addUnits = async (user, unitID, amount, userData) => {
     const units = userData.party;
 
     for (let i = 0; i < amount; i++) {
-        units[Date.now() + Math.floor(Math.random() * 100000)] = unitData;
+        const uniqueID = Date.now() + Math.floor(Math.random() * 100000);
+        const tempData = { ...unitData };
+
+        tempData.UID = uniqueID;
+        units[uniqueID] = tempData;
     }
 
     updateDoc(userRef, {

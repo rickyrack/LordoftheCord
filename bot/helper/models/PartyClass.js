@@ -3,25 +3,12 @@ class Party {
         this.party = userData.party;
         this.stats = userData.stats;
     }
-    get units() {
-        return this.party;
-    }
-    getUnitType(unitID) {
-        return Object.keys(this.party[unitID])[0];
-    }
-    getUnitClassByType(unitType) {
-        let unitClass = '';
-        Object.keys(this.party).forEach(unitId => {
-            if (Object.keys(this.party?.[unitId])[0] === unitType) {
-                unitClass = this.party[unitId].class;
-            }
-        })
-        return unitClass;
-    }
     getUnitMaxExp(unitID) {
-        const rank = this.party[unitID][this.getUnitType(unitID)].rank;
-        // const currentExp = this.party[unitID][this.getUnitType(unitID)].exp;
+        const rank = this.party[unitID].rank;
         return rank * 15;
+    }
+    maxSize() {
+        return this.stats.party.leadership * (6 + Math.floor(this.stats.party.leadership / 2))
     }
     length() {
         return Object.keys(this.party).length;
@@ -34,74 +21,61 @@ class Party {
         })
         return list;
     }
-    shortList(dataType) {
-        let unitAmounts = {};
-        let uniqueUnits = [];
-
-        Object.keys(this.party).forEach(unit => {
-            let addUnit = true;
-            const type = this.getUnitType(unit);
-            const name = this.party[unit][type].name;
-            // first run will always be empty
-            uniqueUnits.forEach(unitData => {
-                if (unitData.type === type) {
-                    addUnit = false;
-                    return;
-                }
-            })
-            if (addUnit) uniqueUnits.push({
-                type: type,
-                name: name,
-                otherData: this.party[unit][type]
-            })
+    list() {
+        // manipulates data so it can be used as a basis for other methods, also useful as is
+        const units = [];
+        Object.keys(this.party).forEach(unitID => {
+            let canPromote = false;
+            if (this.party[unitID].exp >= this.getUnitMaxExp(unitID)) {
+                canPromote = true;
+            }
+            units.push(this.party[unitID]);
+            this.party[unitID].canPromote = canPromote;
         })
-
-        uniqueUnits.forEach(unitData => {
-            unitAmounts[unitData.type] = {};
-            unitAmounts[unitData.type].amount = 0;
-            unitAmounts[unitData.type].name = unitData.name;
-            unitAmounts[unitData.type].otherData = unitData.otherData; // not always used
-        })
-
-        Object.keys(this.party).forEach(unit => {
-            unitAmounts[this.getUnitType(unit)].amount++;
-        })
-
-        // for methods that dont need the finalized array with strings, just data
-        if (dataType === 'rawData') return unitAmounts;
-
-        let stringArray = [];
-        Object.keys(unitAmounts).forEach(unitData => {
-            stringArray.push(`[${unitAmounts[unitData].amount}] ${unitAmounts[unitData].name}`);
-        })
-        return stringArray;
+        return units;
     }
-    shortListWithPromos(format) {
-        const shortListRawData = this.shortList('rawData');
+    shortList() {
+        const units = this.list();
+        const condenseUnits = {};
 
-        Object.keys(shortListRawData).forEach(unitData => {
-            shortListRawData[unitData].promos = 0;
+        units.forEach(unit => {
+            condenseUnits[unit.type] = {};
         })
 
-        Object.keys(this.party).forEach(unit => {
-            if(this.party[unit][this.getUnitType(unit)].exp >= this.getUnitMaxExp) {
-                shortListRawData[this.getUnitType(unit)].promos++;
+        units.forEach(unit => {
+            // add another for all manipulated/condensed data, make sure to add it to forEach function below as well
+            condenseUnits[unit.type].amt >= 1 ? condenseUnits[unit.type].amt++ : condenseUnits[unit.type].amt = 1;
+            if(unit.canPromote === true) {
+                condenseUnits[unit.type].promos >= 1 ? condenseUnits[unit.type].promos++ : condenseUnits[unit.type].promos = 1;
             }
         })
 
-        // gives data as object instead of string
-        if (format === 'object') {
-            return shortListRawData;
-        }
-
-        let stringArray = [];
-        Object.keys(shortListRawData).forEach(unitData => {
-            stringArray.push(`[${shortListRawData[unitData].amount}] ${shortListRawData[unitData].name} ${shortListRawData[unitData].promos}+`);
+        // the forEach in question -->
+        Object.keys(condenseUnits).forEach(unitType => {
+            const totalType = condenseUnits[unitType].amt;
+            const totalPromos = condenseUnits[unitType].promos;
+            units.forEach(unit => {
+                if (unitType === unit.type) {
+                    condenseUnits[unitType] = unit;
+                    condenseUnits[unitType].amt = totalType;
+                    condenseUnits[unitType].promos = totalPromos;
+                }
+            })
         })
-        return stringArray;
+        return condenseUnits;
     }
-    typeList() {
-        return this.shortList('rawData');
+    textSummary() {
+        const shortList = this.shortList();
+        const textList = [];
+
+        console.log(shortList)
+
+        Object.keys(shortList).forEach(unit => {
+            const unitData = shortList[unit];
+            textList.push(`${unitData.name} [${unitData.amt}] +${unitData.promos}^`);
+        })
+
+        return textList;
     }
 }
 
