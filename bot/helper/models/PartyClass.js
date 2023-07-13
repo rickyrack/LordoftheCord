@@ -1,3 +1,5 @@
+const { getPromos } = require("../../../backend/firestore/utility/get_promos");
+
 class Party {
     constructor(userData) {
         this.party = userData.party;
@@ -6,6 +8,10 @@ class Party {
     getUnitMaxExp(unitID) {
         const rank = this.party[unitID].rank;
         return rank * 15;
+    }
+    getUnitPromoCost(unitID) {
+        const rank = this.party[unitID].rank;
+        return rank * 20;
     }
     maxSize() {
         return this.stats.party.leadership * (6 + Math.floor(this.stats.party.leadership / 2))
@@ -16,7 +22,6 @@ class Party {
     longList() {
         let list = [];
         Object.keys(this.party).forEach(unit => {
-            console.log(this.getUnitType(unit));
             list.push(this.party[unit][this.getUnitType(unit)].name);
         })
         return list;
@@ -24,13 +29,14 @@ class Party {
     list() {
         // manipulates data so it can be used as a basis for other methods, also useful as is
         const units = [];
-        Object.keys(this.party).forEach(unitID => {
+        const partyData = JSON.parse(JSON.stringify(this.party)); // this prevents the original this.party from being modified
+        Object.keys(partyData).forEach(unitID => {
             let canPromote = false;
-            if (this.party[unitID].exp >= this.getUnitMaxExp(unitID)) {
+            if (partyData[unitID].exp >= this.getUnitMaxExp(unitID)) {
                 canPromote = true;
             }
-            units.push(this.party[unitID]);
-            this.party[unitID].canPromote = canPromote;
+            partyData[unitID].canPromote = canPromote;
+            units.push(partyData[unitID]);
         })
         return units;
     }
@@ -48,6 +54,10 @@ class Party {
             if(unit.canPromote === true) {
                 condenseUnits[unit.type].promos >= 1 ? condenseUnits[unit.type].promos++ : condenseUnits[unit.type].promos = 1;
             }
+
+            if(!condenseUnits[unit.type].promos && unit.promote[0] !== 'max') {
+                condenseUnits[unit.type].promos = 0;
+            }
         })
 
         // the forEach in question -->
@@ -59,24 +69,46 @@ class Party {
                     condenseUnits[unitType] = unit;
                     condenseUnits[unitType].amt = totalType;
                     condenseUnits[unitType].promos = totalPromos;
+                    delete condenseUnits[unitType].exp;
+                    delete condenseUnits[unitType].UID;
+                    delete condenseUnits[unitType].canPromote;
                 }
             })
         })
         return condenseUnits;
     }
+    promoAvailable(unitType) {
+        const units = this.list();
+        const promoAvailable = [];
+        units.forEach(unit => {
+            if(unit.type === unitType) {
+                if(this.getUnitMaxExp(unit.UID) <= unit.exp) {
+                    promoAvailable.push(unit.UID);
+                }
+            }
+        })
+        return promoAvailable;
+    }
+    async getPromoTypes(typeData) {
+        return await getPromos(typeData);
+    }
     textSummary() {
         const shortList = this.shortList();
         const textList = [];
 
-        console.log(shortList)
-
         Object.keys(shortList).forEach(unit => {
             const unitData = shortList[unit];
-            textList.push(`${unitData.name} [${unitData.amt}] +${unitData.promos}^`);
+            if(unitData.promos === 0 || !unitData.promos) {
+                textList.push(`${unitData.name} [${unitData.amt}]`);
+            }
+            else {
+                textList.push(`${unitData.name} [${unitData.amt}] +${unitData.promos}^`);
+            }
         })
 
         return textList;
     }
+    
 }
 
 module.exports = { Party };

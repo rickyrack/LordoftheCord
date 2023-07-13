@@ -163,9 +163,7 @@ module.exports = {
       });
 
       const timeoutEmbed = new EmbedBuilder().setTitle("Your gear got bored.");
-      const closeEmbed = new EmbedBuilder().setTitle(
-        "You stopped looking at your gear."
-      );
+      const closeEmbed = new EmbedBuilder().setTitle("You stopped looking at your gear.");
 
       let gearChoices = "";
       let itemUsed = false;

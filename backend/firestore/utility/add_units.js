@@ -15,10 +15,10 @@ const addUnits = async (user, unitID, amount, userData) => {
 
     let unitData = {};
     unitsCollSnap.forEach(doc => {
-        Object.keys(doc.data()).forEach(unit => {
-            if (unit === unitID) {
-                unitData = doc.data()[unit];
-                unitData.type = unit;
+        Object.keys(doc.data()).forEach(unitType => {
+            if (unitType === unitID) {
+                unitData = doc.data()[unitType];
+                unitData.type = unitType;
                 unitData.exp = 0;
                 unitData.class = doc.id;
             }

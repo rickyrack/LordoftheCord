@@ -18,9 +18,10 @@ const start = async (user) => {
             health: 100,
             morale: 80,
             level: 1,
-            player: { // only affects player
-                strength: 1
-            },
+            gold: 100,
+            // only affects player
+            strength: 1,
+            athletics: 1,
             party: { // affects player AND party
                 pathfinding: 1,
                 leadership: 1,

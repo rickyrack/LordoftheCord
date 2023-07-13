@@ -18,6 +18,7 @@ const adminClearParty = async (user, interaction) => {
   let message;
 
   message = await interaction.reply({
+    content: `Are you sure you want to clear ${targetUser}'s party?`,
     components: [row1],
   });
 
