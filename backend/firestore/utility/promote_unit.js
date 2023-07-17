@@ -3,7 +3,6 @@ const { db } = require("../../firebase-config");
 
 const promoteUnit = async (user, unitID, promoType, party, promoCost) => {
     const userRef = doc(db, 'users', user.id);
-    console.log('promoting')
     const unitsCollRef = collection(db, 'units');
     const unitsCollSnap = await getDocs(unitsCollRef);
 
@@ -23,15 +22,13 @@ const promoteUnit = async (user, unitID, promoType, party, promoCost) => {
 
     const units = party;
 
-    console.log(unitID)
     units[unitID] = unitData;
 
     // allows admin/free promotions if promoCost is undefined or less than 1
-    console.log(`cost: ${promoCost}`)
     if(promoCost > 0) {
         updateDoc(userRef, {
             party: units,
-            gold: increment(-promoCost)
+            'stats.gold': increment(-promoCost)
         })
     }
     else {
@@ -39,7 +36,6 @@ const promoteUnit = async (user, unitID, promoType, party, promoCost) => {
             party: units
         })
     }
-
 
     return true;
 }

@@ -3,6 +3,7 @@ const { Party } = require("../../helper/models/PartyClass");
 const { useCommand, setActive } = require("../../../backend/misc/active_users");
 const { getUser } = require("../../../backend/firestore/utility/get_user");
 const { promoteUnit } = require("../../../backend/firestore/utility/promote_unit");
+const { dismissUnits } = require("../../../backend/firestore/utility/dismiss_units");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -55,7 +56,7 @@ module.exports = {
     
             const partyEmbed = new EmbedBuilder()
                 .setTitle(`${user.username}'s party`)
-                .setDescription(`Morale: ${userData.stats.morale}\nParty Size: ${party.length()}/${party.maxSize()} units`)
+                .setDescription(`:slight_smile: ${userData.stats.morale}\n<:PartySize:1129186732479369266> ${party.length()}/${party.maxSize()} units\n<:Gold:1129184925418000454> ${userData.stats.gold}`)
                 .addFields({name: `${unitString}`, value:' '})
     
             const partyMsg = new EmbedBuilder()
@@ -141,33 +142,46 @@ module.exports = {
 
             let unitChoice = null;
             let collectorState = null;
-            //let maxPromotion = 0;
             let promoGroupEmbed = new EmbedBuilder();
             let promoOptionsRow = new ActionRowBuilder();
+            let promoCancelRow = new ActionRowBuilder();
             let active = null;
             let promoChoice = '';
             let promoTypes = [];
             let firstPromo = true;
             let promoMsg = ' ';
-            //let promoMsgNameHolder = '';
             let promoCounter = 0;
             let promoUnits = [];
-            let maxPromo = false;
-            let tempGold = 0;
+            let tempGold = userData.stats.gold;
             let timeout = true;
+            let promoCost = 0;
+            
+            let dismissGroupEmbed = new EmbedBuilder();
+            let dismissSelect = new StringSelectMenuBuilder();
+            let dismissSelectRow = new ActionRowBuilder();
+            let dismissMsg = ' ';
+            let dismissChoice = '';
+            let canDismiss = false;
+
             partyCollector.on('collect', async i => {
                 let intType = i.customId !== 'unit'
-                ? 'button'
-                : 'selectMenu';
+                ? 'other'
+                : 'unitSelect';
 
-                if (intType === 'selectMenu') {
+                if (intType === 'unitSelect') {
                     unitChoice = i.values[0];
                     i.deferUpdate();
-                    //partyCollector.stop('Unit Type Selected');
-                    //return;
                 }
 
-                collectorState = i.customId;
+                switch (active) {
+                    case 'dismissGroup':
+                        collectorState = i.values[0];
+                        break;
+                
+                    default:
+                        collectorState = i.customId;
+                        break;
+                }
 
                 if(collectorState === 'close') {
                     const closeEmbed = new EmbedBuilder().setTitle("You stopped speaking to your party.");
@@ -181,7 +195,7 @@ module.exports = {
                     }
 
                 if (!unitChoice && collectorState !== 'promoParty' && collectorState !== 'disbandParty') {
-                    i.update(' '); //i.update('Loading...'); "loading was sometimes staying on screen, temp fix"
+                    i.update(' '); //i.update('Loading...'); "loading was sometimes staying on screen <-- temp fix"
                     partyFunction('You must select a unit first!');
                     collectorState = null;
                     partyCollector.stop('No Unit Type Selected');
@@ -190,7 +204,7 @@ module.exports = {
 
                 const promote = async (typeData) => {
                     promoGroupEmbed
-                        .setTitle(`Select a promotion for each [${typeData.name}].`)
+                        .setTitle(`Select a promotion for each [${typeData.name}].\n${tempGold} <:Gold:1129184925418000454>`)
                         .setDescription(`Auto promote will use the [${typeData.class}] tree for all remaining units.`)
 
                     const autoPromote = new ButtonBuilder()
@@ -199,39 +213,49 @@ module.exports = {
                         .setStyle(ButtonStyle.Primary)
                         .setDisabled(true)
 
+                    const cancelPromote = new ButtonBuilder()
+                        .setCustomId('cancelPromo')
+                        .setLabel('Cancel')
+                        .setStyle(ButtonStyle.Danger)
+
                     const promoButtons = [];
-                    if(firstPromo) {
-                        tempGold = userData.stats.gold;
-                        console.log(userData.stats)
-                        console.log(tempGold)
+                    if(firstPromo) { //based on unit type and not unit id, later it will be id based to account for unique unit upgrades/promotions
                         firstPromo = false;
                         promoUnits = party.promoAvailable(typeData.type);
                         promoCounter = promoUnits.length;
+                        promoCost = party.getUnitPromoCost(promoUnits[promoCounter - 1]); // applies the same cost to all units of same type
                         promoTypes = await party.getPromoTypes(typeData);
-                        console.log('first')
-                        console.log(promoTypes)
                         promoTypes.forEach(unitType => {
                             promoButtons.push(
                                 new ButtonBuilder()
                                     .setCustomId(`${unitType.id}`)
-                                    .setLabel(`${unitType.name}`)
+                                    .setLabel(`${unitType.name} [${promoCost} Gold]`)
                                     .setStyle(ButtonStyle.Success)
                             )
                         })
     
                         promoButtons.push(autoPromote);
 
-                            promoOptionsRow
+                        promoOptionsRow
                             .addComponents(
                                 promoButtons
+                            )
+                        promoCancelRow
+                            .addComponents(
+                                cancelPromote
                             )
                     }
                 }
 
                 if (collectorState === 'promoGroup' || active === 'promoGroup') {
-                    console.log(shortList[unitChoice])
-                    if(shortList[unitChoice]?.promos === undefined) {
-                        console.log('max')
+                    // this section checks all units
+                    if(collectorState === 'cancelPromo') {
+                        i.update(' ');
+                        partyFunction('You did not promote any units.');
+                        partyCollector.stop('Promo Cancel');
+                        return;
+                    }
+                    else if(shortList[unitChoice]?.promos === undefined) {
                         i.update(' ');
                         partyFunction('These units are at their maximum promotion!');
                         partyCollector.stop('Units Maxed');
@@ -250,19 +274,14 @@ module.exports = {
                         promoChoice = collectorState;
                     }
 
-                    if (!firstPromo) {
-                        console.log('look')
-                        console.log(promoUnits[promoCounter - 1])
-                        const promoCost = party.getUnitPromoCost(promoUnits[promoCounter - 1])
-                        tempGold -= promoCost;
-                        console.log(`tempGold ${tempGold} promoCost ${promoCost}`)
+                    if (!firstPromo) { // this section checks individual units
                         if(tempGold < promoCost) {
                             i.update('Loading...');
-                            partyFunction(`You do not have enough gold to promote [${shortList[unitChoice].name}], earn some gold!`);
+                            partyFunction(`You do not have enough gold to promote a [${shortList[unitChoice].name}], earn some gold!`);
                             partyCollector.stop('Not Enough Gold');
                             return;
                         }
-                        console.log(`tempGold: ${tempGold}`);
+                        tempGold -= promoCost;
                         await promoteUnit(user, promoUnits[promoCounter - 1], promoChoice, party.party, promoCost);
                         promoCounter--;
                         if(promoCounter === 0) {
@@ -280,16 +299,74 @@ module.exports = {
                     i.update({
                         content: promoMsg,
                         embeds: [promoGroupEmbed],
-                        components: [promoOptionsRow]
+                        components: [promoOptionsRow, promoCancelRow]
                     });
-                    promoMsg = `${shortList[unitType].name} has been promoted to I2 ${promoChoice}`;
+                    promoMsg = `${shortList[unitType].name} has been promoted to I2 ${promoChoice}`; //fix this
                 }
 
+                const dismiss = async (typeData) => {
+                    dismissGroupEmbed
+                        .setTitle(`Select the amount of [${typeData.name}] to dismiss from your party.\nRemaining: ${typeData.amt}`)
+    
+                    dismissSelect
+                        .setCustomId('amt')
+                        .setPlaceholder('How many units do you want to dismiss?')
+
+                    const dismissOptions = typeData.amt <= 25 ? typeData.amt : 25;
+                    for (let i = 0; i <= dismissOptions; i++) {
+                        if(i === 0) {
+                            dismissSelect.addOptions(
+                                new StringSelectMenuOptionBuilder()
+                                    .setLabel('Cancel')
+                                    .setValue(`${i}`)
+                            )
+                        }
+                        else {
+                            dismissSelect.addOptions(
+                                new StringSelectMenuOptionBuilder()
+                                    .setLabel(`${i}`)
+                                    .setValue(`${i}`)
+                            )
+                        }
+                    }
+    
+                    dismissSelectRow
+                        .addComponents(
+                            dismissSelect
+                        )
+
+                    canDismiss = true;
+                }
+    
+                if (collectorState === 'dismissGroup' || active === 'dismissGroup') {
+                    if(collectorState !== 'dismissGroup') {
+                        dismissChoice = collectorState;
+                    }
+                    active = 'dismissGroup';
+
+                    if(canDismiss) {
+                        dismissMsg = `You have dismissed ${dismissChoice} [${unitChoice}]`;
+                        i.update('Loading...');
+                        await dismissUnits(user, unitChoice, dismissChoice, party.party);
+                        partyFunction(dismissMsg);
+                        partyCollector.stop('Units Dismissed');
+                        return;
+                    }
+
+                    const unitType = Object.keys(party.shortList()).find(unitType => unitType === unitChoice);
+
+                    await dismiss(shortList[unitType]);
+                    i.update({
+                        content: dismissMsg,
+                        embeds: [dismissGroupEmbed],
+                        components: [dismissSelectRow]
+                    })
+                }
             })
 
             partyCollector.on('end', async (collected, reason) => {
                 if(timeout) { // copy gear for how to timeout properly? (half complete, finish as party is developed)
-                    const timeoutEmbed = new EmbedBuilder().setTitle("Your party is bored of staring to you.");
+                    const timeoutEmbed = new EmbedBuilder().setTitle("Your party is bored of staring at you.");
                     setActive(user.id, false);
                     await interaction.editReply({
                       content: "",

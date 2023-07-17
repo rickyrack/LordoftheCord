@@ -11,6 +11,7 @@ const {
   getLocations,
 } = require("../../../backend/firestore/utility/get_locations");
 const { useCommand, setActive } = require("../../../backend/misc/active_users");
+const { Party } = require("../../helper/models/PartyClass");
 
 module.exports = {
   data: new SlashCommandBuilder().setName("map").setDescription("map TEST"),
@@ -38,6 +39,8 @@ module.exports = {
 
       const mapData = require("../../../backend/map/map.json").map;
       let tileSet = require("../../../backend/map/tile_set.json");
+
+      const party = new Party(userData);
 
       const travelMap = [];
 
@@ -92,7 +95,7 @@ module.exports = {
       }
 
       const mapEmbed = new EmbedBuilder()
-        .setTitle("World Map")
+        .setTitle(`World Map\n:slight_smile: ${userData.stats.morale} <:PartySize:1129186732479369266> ${party.length()}/${party.maxSize()} <:Gold:1129184925418000454> ${userData.stats.gold} <:Honor:1130331174489817118> ${userData.stats.honor}`)
         .setDescription(displayMap)
         .setThumbnail("https://i.imgur.com/VJRI1K9.png") // add the canvas show party location
         .setFooter({

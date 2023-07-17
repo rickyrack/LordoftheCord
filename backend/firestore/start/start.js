@@ -22,6 +22,7 @@ const start = async (user) => {
             // only affects player
             strength: 1,
             athletics: 1,
+            honor: 'N/A',
             party: { // affects player AND party
                 pathfinding: 1,
                 leadership: 1,
